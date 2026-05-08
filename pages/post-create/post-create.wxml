@@ -1,0 +1,156 @@
+<view class="container">
+  <!-- 头部 -->
+  <view class="header">
+    <view class="header-left" bindtap="onCancel">
+      <text class="cancel-btn">取消</text>
+    </view>
+    <text class="header-title">分享美食</text>
+    <view class="header-right">
+      <button class="submit-btn {{isSubmitting ? 'disabled' : ''}}" bindtap="onSubmit">
+        {{isSubmitting ? '发布中...' : '发布'}}
+      </button>
+    </view>
+  </view>
+
+  <!-- 表单内容 -->
+  <scroll-view class="form-scroll" scroll-y>
+    <view class="form-content">
+      <!-- 标题输入 -->
+      <view class="form-item">
+        <input 
+          class="title-input" 
+          placeholder="给你的分享起个标题（必填）"
+          value="{{title}}"
+          maxlength="{{maxTitleLength}}"
+          bindinput="onTitleInput"
+        />
+        <text class="input-count">{{title.length}}/{{maxTitleLength}}</text>
+      </view>
+
+      <!-- 内容输入 -->
+      <view class="form-item">
+        <textarea 
+          class="content-textarea" 
+          placeholder="分享你的美食体验，比如味道如何、环境怎样、值不值得推荐...（必填，至少10个字）"
+          value="{{content}}"
+          maxlength="{{maxContentLength}}"
+          bindinput="onContentInput"
+        />
+        <text class="input-count">{{content.length}}/{{maxContentLength}}</text>
+      </view>
+
+      <!-- 图片上传 -->
+      <view class="form-item">
+        <view class="section-label">
+          <text class="label-text">📸 上传图片</text>
+          <text class="label-hint">（可选，最多{{maxImages}}张）</text>
+        </view>
+        <view class="image-upload">
+          <view 
+            wx:for="{{images}}" 
+            wx:key="*this"
+            class="image-item"
+          >
+            <image 
+              class="uploaded-image" 
+              src="{{item}}" 
+              mode="aspectFill"
+              bindtap="onPreviewImage"
+              data-index="{{index}}"
+            />
+            <view class="remove-btn" bindtap="onRemoveImage" data-index="{{index}}">
+              <text class="remove-icon">✕</text>
+            </view>
+          </view>
+          <view class="add-image-btn" bindtap="onChooseImage" wx:if="{{images.length < maxImages}}">
+            <text class="add-icon">+</text>
+            <text class="add-text">添加图片</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 位置信息 -->
+      <view class="form-item">
+        <view class="section-header">
+          <view class="section-label">
+            <text class="label-text">📍 位置信息</text>
+            <text class="label-hint">（可选）</text>
+          </view>
+          <view class="location-btn" bindtap="onGetLocation">
+            <text class="location-btn-icon">📍</text>
+            <text class="location-btn-text">定位</text>
+          </view>
+        </view>
+        
+        <view class="location-inputs">
+          <view class="input-row">
+            <text class="input-label">城市</text>
+            <input 
+              class="location-input" 
+              placeholder="如：北京"
+              value="{{city}}"
+              bindinput="onCityInput"
+            />
+          </view>
+          <view class="input-row">
+            <text class="input-label">区县</text>
+            <input 
+              class="location-input" 
+              placeholder="如：朝阳区"
+              value="{{district}}"
+              bindinput="onDistrictInput"
+            />
+          </view>
+          <view class="input-row">
+            <text class="input-label">详细地址</text>
+            <input 
+              class="location-input" 
+              placeholder="如：三里屯太古里"
+              value="{{address}}"
+              bindinput="onAddressInput"
+            />
+          </view>
+        </view>
+      </view>
+
+      <!-- 标签 -->
+      <view class="form-item">
+        <view class="section-label">
+          <text class="label-text">🏷️ 添加标签</text>
+          <text class="label-hint">（可选，最多5个）</text>
+        </view>
+        <view class="tag-input-area">
+          <input 
+            class="tag-input" 
+            placeholder="输入标签，如：火锅、甜品"
+            value="{{tagInput}}"
+            bindinput="onTagInput"
+            bindconfirm="onAddTag"
+          />
+          <view class="add-tag-btn" bindtap="onAddTag">
+            <text>添加</text>
+          </view>
+        </view>
+        <view class="tag-list" wx:if="{{tags.length > 0}}">
+          <view 
+            wx:for="{{tags}}" 
+            wx:key="*this"
+            class="tag-item"
+          >
+            <text>#{{item}}</text>
+            <text class="tag-remove" bindtap="onRemoveTag" data-index="{{index}}">✕</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 提示信息 -->
+      <view class="tips-section">
+        <text class="tips-title">💡 小贴士</text>
+        <text class="tips-item">• 标题简洁明了更容易吸引关注</text>
+        <text class="tips-item">• 详细描述味道、环境、价格等信息</text>
+        <text class="tips-item">• 上传真实图片能增加可信度</text>
+        <text class="tips-item">• 添加位置信息方便附近的人找到</text>
+      </view>
+    </view>
+  </scroll-view>
+</view>

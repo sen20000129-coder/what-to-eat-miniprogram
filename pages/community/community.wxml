@@ -1,0 +1,184 @@
+<view class="container">
+  <!-- 头部导航 -->
+  <view class="header">
+    <view class="nav-bar">
+      <view class="back-btn" bindtap="onBackToHome">
+        <text class="back-icon">‹</text>
+      </view>
+      <text class="nav-title">美食社区</text>
+      <view class="placeholder"></view>
+    </view>
+  </view>
+
+  <!-- 搜索栏 -->
+  <view class="search-section">
+    <view class="search-box">
+      <text class="search-icon">🔍</text>
+      <input 
+        class="search-input" 
+        placeholder="搜索美食、地点..." 
+        value="{{searchKeyword}}"
+        bindinput="onSearchInput"
+      />
+      <view class="clear-btn" wx:if="{{searchKeyword}}" bindtap="onClearSearch">
+        <text class="clear-icon">✕</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 城市筛选 -->
+  <view class="filter-section" wx:if="{{cities.length > 0}}">
+    <view class="filter-header">
+      <text class="filter-title">📍 按城市筛选</text>
+      <text class="filter-hint">（可选）</text>
+    </view>
+    <scroll-view class="filter-scroll" scroll-x show-scrollbar="false">
+      <view class="filter-list">
+        <view 
+          class="filter-item {{selectedCity === null ? 'active' : ''}}"
+          bindtap="onSelectCity"
+          data-city=""
+        >
+          <text>全部</text>
+        </view>
+        <view 
+          wx:for="{{cities}}" 
+          wx:key="*this"
+          class="filter-item {{selectedCity === item ? 'active' : ''}}"
+          bindtap="onSelectCity"
+          data-city="{{item}}"
+        >
+          <text>{{item}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 热门标签 -->
+  <view class="filter-section" wx:if="{{hotTags.length > 0}}">
+    <view class="filter-header">
+      <text class="filter-title">🏷️ 热门标签</text>
+    </view>
+    <scroll-view class="filter-scroll" scroll-x show-scrollbar="false">
+      <view class="filter-list">
+        <view 
+          class="filter-item tag-item {{selectedTag === null ? 'active' : ''}}"
+          bindtap="onSelectTag"
+          data-tag=""
+        >
+          <text>全部</text>
+        </view>
+        <view 
+          wx:for="{{hotTags}}" 
+          wx:key="*this"
+          class="filter-item tag-item {{selectedTag === item ? 'active' : ''}}"
+          bindtap="onSelectTag"
+          data-tag="{{item}}"
+        >
+          <text>#{{item}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 帖子列表 -->
+  <view class="posts-section">
+    <view class="section-header">
+      <text class="section-title">📝 最新分享</text>
+      <text class="post-count">共 {{posts.length}} 条</text>
+    </view>
+
+    <view class="posts-list">
+      <view wx:for="{{filteredPosts}}" wx:key="id" class="post-card">
+        <view class="post-click-area" bindtap="onPostTap" data-id="{{item.id}}"></view>
+        <!-- 作者信息 -->
+        <view class="post-header">
+          <image class="author-avatar" src="{{item.author.avatar}}" mode="aspectFill"/>
+          <view class="author-info">
+            <text class="author-name">{{item.author.nickname}}</text>
+            <text class="post-time">{{item.createTime}}</text>
+          </view>
+          <view class="location-tag" wx:if="{{item.location}}">
+            <text class="location-icon">📍</text>
+            <text class="location-text">{{item.location.city}}{{item.location.district ? ' · ' + item.location.district : ''}}</text>
+          </view>
+        </view>
+
+        <!-- 帖子内容 -->
+        <view class="post-content">
+          <text class="post-title">{{item.title}}</text>
+          <text class="post-desc">{{item.content}}</text>
+        </view>
+
+        <!-- 图片 -->
+        <view class="post-images" wx:if="{{item.images.length > 0}}">
+          <image 
+            wx:for="{{item.images}}" 
+            wx:for-item="img"
+            wx:key="*this"
+            class="post-image {{item.images.length === 1 ? 'single' : ''}}"
+            src="{{img}}" 
+            mode="aspectFill"
+            catchtap="onPreviewImage"
+            data-url="{{img}}"
+            data-urls="{{item.images}}"
+          />
+        </view>
+
+        <!-- 标签 -->
+        <view class="post-tags" wx:if="{{item.tags.length > 0}}">
+          <text 
+            wx:for="{{item.tags}}" 
+            wx:for-item="tag"
+            wx:key="*this"
+            class="tag"
+          >#{{tag}}</text>
+        </view>
+
+        <!-- 互动按钮 -->
+        <view class="post-actions">
+          <view class="action-btn" catchtap="onLike" data-id="{{item.id}}">
+            <text class="action-icon">{{item.isLiked ? '❤️' : '🤍'}}</text>
+            <text class="action-count {{item.isLiked ? 'liked' : ''}}">{{item.likes}}</text>
+          </view>
+          <view class="action-btn" catchtap="onFavorite" data-id="{{item.id}}">
+            <text class="action-icon">{{item.isFavorited ? '⭐' : '☆'}}</text>
+            <text class="action-count {{item.isFavorited ? 'favorited' : ''}}">{{item.favorites}}</text>
+          </view>
+          <view class="action-btn" catchtap="onComment" data-id="{{item.id}}">
+            <text class="action-icon">💬</text>
+            <text class="action-count">{{item.comments.length}}</text>
+          </view>
+          <view class="action-btn" catchtap="onShare" data-id="{{item.id}}">
+            <text class="action-icon">↗️</text>
+            <text class="action-text">分享</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 加载更多 -->
+    <view class="load-more" wx:if="{{hasMore && !isLoading}}" bindtap="onLoadMore">
+      <text class="load-text">加载更多</text>
+    </view>
+    <view class="loading" wx:if="{{isLoading}}">
+      <text class="loading-text">加载中...</text>
+    </view>
+    <view class="no-more" wx:if="{{!hasMore && posts.length > 0}}">
+      <text class="no-more-text">已经到底啦~</text>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{posts.length === 0}}">
+      <text class="empty-icon">🍽️</text>
+      <text class="empty-text">还没有相关帖子</text>
+      <text class="empty-hint">快来分享你发现的美食吧！</text>
+    </view>
+  </view>
+
+  <!-- 发布按钮 -->
+  <view class="fab-btn" bindtap="onCreatePost">
+    <text class="fab-icon">+</text>
+    <text class="fab-text">分享</text>
+  </view>
+</view>

@@ -1,0 +1,46 @@
+# 微信开发者工具生成的文件
+*.log
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# 编译输出目录
+dist/
+build/
+miniprogram_npm/
+
+# 本地存储数据（用户数据）
+storage/
+*.localstorage
+
+# 项目私有配置（包含敏感信息）
+project.private.config.json
+
+# 日志文件
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 编辑器配置
+.vscode/
+.idea/
+*.code-workspace
+
+# 临时文件
+*.tmp
+*.bak
+*.backup
+
+# node_modules（如果使用npm依赖）
+node_modules/
+
+# 构建缓存
+.cache/
+.wxpy_cache/
+
+# 测试文件（如果有）
+__tests__/
+*.test.js
+*.spec.js

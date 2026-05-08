@@ -1,0 +1,3215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>今天吃什么</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #FF6B35;
+      --primary-light: #FF8C5A;
+      --secondary: #FFD166;
+      --accent: #06D6A0;
+      --danger: #EF476F;
+      --bg-cream: #FFF9F0;
+      --bg-warm: #FFF3E6;
+      --text-dark: #2D3436;
+      --text-muted: #636E72;
+      --card-bg: #FFFFFF;
+      --shadow-soft: 0 4px 20px rgba(255, 107, 53, 0.15);
+      --shadow-strong: 0 8px 40px rgba(255, 107, 53, 0.25);
+      --radius-sm: 12px;
+      --radius-md: 20px;
+      --radius-lg: 32px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-cream);
+      min-height: 100vh;
+      padding: 16px;
+      background-image: 
+        radial-gradient(circle at 20% 20%, rgba(255, 209, 102, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(6, 214, 160, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(255, 107, 53, 0.1) 0%, transparent 70%);
+    }
+
+    .container {
+      max-width: 390px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-strong);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+      z-index: 100;
+    }
+
+    /* Tab Navigation */
+    .tab-nav {
+      display: flex;
+      background: linear-gradient(180deg, var(--bg-warm) 0%, var(--card-bg) 100%);
+      border-bottom: 1px solid var(--bg-warm);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 16px 12px;
+      background: transparent;
+      border: none;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .tab-btn::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+      border-radius: 2px 2px 0 0;
+      transition: width 0.2s ease;
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+    }
+
+    .tab-btn.active::after {
+      width: 60%;
+    }
+
+    .tab-emoji {
+      font-size: 18px;
+    }
+
+    .tab-content {
+      display: none;
+      max-height: calc(100vh - 180px);
+      overflow-y: auto;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* ============ Random Pick Page ============ */
+    .header {
+      padding: 32px 24px 24px;
+      text-align: center;
+      background: linear-gradient(180deg, var(--bg-warm) 0%, var(--card-bg) 100%);
+      position: relative;
+    }
+
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 24px;
+      right: 24px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 107, 53, 0.2), transparent);
+    }
+
+    .title {
+      font-family: 'ZCOOL KuaiLe', cursive;
+      font-size: 36px;
+      color: var(--primary);
+      letter-spacing: 4px;
+      margin-bottom: 12px;
+      position: relative;
+      display: inline-block;
+    }
+
+    .title::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--secondary), transparent);
+      border-radius: 2px;
+    }
+
+    .time-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, var(--secondary) 0%, #FFB347 100%);
+      padding: 8px 20px;
+      border-radius: 24px;
+      box-shadow: 0 4px 16px rgba(255, 209, 102, 0.4);
+    }
+
+    .time-text {
+      font-size: 14px;
+      color: var(--text-dark);
+      font-weight: 600;
+    }
+
+    /* 时间段选择器 */
+    .time-period-section {
+      padding: 16px 20px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--bg-warm);
+    }
+
+    .time-period-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .time-period-title {
+      font-size: 14px;
+      color: var(--text-dark);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .time-period-title::before {
+      content: '⏰';
+      font-size: 14px;
+    }
+
+    .time-period-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--bg-warm);
+      padding: 3px 10px;
+      border-radius: 10px;
+    }
+
+    .time-period-tabs {
+      display: flex;
+      gap: 8px;
+    }
+
+    .time-period-tab {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      border: 2px solid transparent;
+      background: var(--bg-warm);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+
+    .time-period-tab:active {
+      transform: scale(0.95);
+    }
+
+    .time-period-tab.active {
+      background: linear-gradient(135deg, var(--accent) 0%, #00C896 100%);
+      color: white;
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(6, 214, 160, 0.3);
+    }
+
+    /* 类型选择 */
+    .type-section {
+      padding: 16px 20px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--bg-warm);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      color: var(--text-dark);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .section-title::before {
+      content: '🍴';
+      font-size: 14px;
+    }
+
+    .hint-text {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--bg-warm);
+      padding: 3px 10px;
+      border-radius: 10px;
+    }
+
+    .type-scroll-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .scroll-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--card-bg);
+      border: 2px solid var(--bg-warm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+      color: var(--primary);
+      font-size: 18px;
+      font-weight: 300;
+    }
+
+    .scroll-btn:hover {
+      border-color: var(--primary);
+      background: var(--bg-warm);
+    }
+
+    .scroll-btn:active {
+      transform: scale(0.9);
+    }
+
+    .scroll-btn.disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .type-scroll {
+      flex: 1;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding: 2px 0;
+    }
+
+    .type-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .type-scroll-inner {
+      display: inline-flex;
+      gap: 8px;
+    }
+
+    .type-tag {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      border: 2px solid transparent;
+      background: var(--bg-warm);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      min-width: 70px;
+      flex-shrink: 0;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .type-tag.selected {
+      background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .type-emoji {
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .type-name {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .type-tag.selected .type-name {
+      color: white;
+      font-weight: 600;
+    }
+
+    /* 冷却卡片 */
+    .cool-down-card {
+      background: linear-gradient(135deg, #FFE8D6 0%, #FFD9BF 100%);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin: 16px 20px;
+      text-align: center;
+      border: 2px solid var(--primary);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .cool-down-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+      animation: bounce 1s ease infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    .cool-down-title {
+      font-family: 'ZCOOL KuaiLe', cursive;
+      font-size: 18px;
+      color: var(--text-dark);
+      margin-bottom: 8px;
+    }
+
+    .cool-down-time {
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--primary);
+      font-family: 'Noto Sans SC', sans-serif;
+    }
+
+    .cool-down-time span {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .cool-down-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    /* 抽取模块 */
+    .roller-section {
+      padding: 24px 20px 32px;
+      background: linear-gradient(180deg, var(--card-bg) 0%, var(--bg-warm) 100%);
+    }
+
+    /* 当前筛选状态提示 */
+    .filter-status {
+      background: linear-gradient(135deg, var(--bg-warm) 0%, #FFE8D6 100%);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      border-left: 4px solid var(--primary);
+    }
+
+    .filter-status-title {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .filter-status-content {
+      font-size: 13px;
+      color: var(--text-dark);
+      font-weight: 600;
+    }
+
+    .filter-tag {
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 8px;
+      font-size: 11px;
+      margin-right: 4px;
+      margin-bottom: 4px;
+    }
+
+    .filter-tag.all {
+      background: var(--accent);
+    }
+
+    .roller-wrapper {
+      position: relative;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: linear-gradient(145deg, #FFE8D6 0%, #FFD9BF 50%, #FFC9A8 100%);
+      padding: 4px;
+      box-shadow: 
+        0 8px 32px rgba(255, 107, 53, 0.2),
+        inset 0 2px 8px rgba(255, 255, 255, 0.5);
+    }
+
+    .roller-decoration {
+      display: flex;
+      justify-content: center;
+      padding: 8px 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    }
+
+    .decoration-dots {
+      display: flex;
+      gap: 10px;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--primary);
+      opacity: 0.6;
+    }
+
+    .dot:nth-child(odd) {
+      background: var(--secondary);
+    }
+
+    .roller-container {
+      position: relative;
+      height: 220px;
+      overflow: hidden;
+      background: linear-gradient(180deg, #FFFBF7 0%, #FFF7F0 100%);
+      border-radius: var(--radius-md);
+      box-shadow: inset 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .roller-mask {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 70px;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .roller-mask.top {
+      top: 0;
+      background: linear-gradient(180deg, #FFFBF7 0%, rgba(255, 251, 247, 0) 100%);
+    }
+
+    .roller-mask.bottom {
+      bottom: 0;
+      background: linear-gradient(0deg, #FFF7F0 0%, rgba(255, 247, 240, 0) 100%);
+    }
+
+    .roller-track {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 8px;
+    }
+
+    .roller-item {
+      height: 70px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.4;
+      transition: all 0.3s ease;
+      margin: 2px 0;
+    }
+
+    .roller-item.center {
+      opacity: 1;
+      transform: scale(1.15);
+    }
+
+    .roller-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      padding: 8px 24px;
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      border: 1px solid rgba(255, 107, 53, 0.1);
+    }
+
+    .roller-item.center .roller-card {
+      box-shadow: var(--shadow-strong);
+      border-color: var(--primary);
+    }
+
+    .roller-emoji {
+      font-size: 32px;
+      line-height: 1;
+    }
+
+    .roller-name {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .roller-calories {
+      font-size: 10px;
+      color: var(--primary);
+      font-weight: 600;
+      background: var(--bg-warm);
+      padding: 2px 8px;
+      border-radius: 8px;
+    }
+
+    .roller-item.center .roller-name {
+      color: var(--text-dark);
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .roller-indicator {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 20;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      width: 80%;
+    }
+
+    .indicator-left, .indicator-right {
+      width: 0;
+      height: 0;
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+    }
+
+    .indicator-left {
+      border-right: 12px solid var(--primary);
+    }
+
+    .indicator-right {
+      border-left: 12px solid var(--primary);
+    }
+
+    .indicator-line {
+      flex: 1;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 50%, var(--primary) 100%);
+      border-radius: 2px;
+    }
+
+    .action-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .start-btn {
+      background: linear-gradient(135deg, var(--primary) 0%, #FF8C5A 100%);
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 14px 44px;
+      border-radius: 28px;
+      border: none;
+      box-shadow: 
+        0 6px 24px rgba(255, 107, 53, 0.4),
+        0 2px 8px rgba(255, 107, 53, 0.2);
+      cursor: pointer;
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .start-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .start-btn:hover::before {
+      left: 100%;
+    }
+
+    .start-btn:active {
+      transform: scale(0.96);
+    }
+
+    .pause-btn {
+      background: linear-gradient(135deg, var(--secondary) 0%, #FFB347 100%);
+      animation: pulse 0.6s ease infinite alternate;
+    }
+
+    @keyframes pulse {
+      from {
+        transform: scale(1);
+        box-shadow: 0 6px 24px rgba(255, 209, 102, 0.4);
+      }
+      to {
+        transform: scale(1.05);
+        box-shadow: 0 10px 32px rgba(255, 209, 102, 0.5);
+      }
+    }
+
+    .btn-emoji {
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .rolling-tip {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-style: italic;
+      animation: fadeInOut 1.5s ease infinite;
+    }
+
+    @keyframes fadeInOut {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    .retry-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-warm);
+      padding: 10px 20px;
+      border-radius: 20px;
+      border: 2px dashed var(--primary);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .retry-icon {
+      font-size: 16px;
+    }
+
+    .retry-count {
+      font-size: 14px;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* 结果卡片 */
+    .result-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .result-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .result-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 340px;
+      box-shadow: var(--shadow-strong);
+      transform: scale(0.8);
+      transition: transform 0.3s ease;
+    }
+
+    .result-overlay.active .result-card {
+      transform: scale(1);
+    }
+
+    .result-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .result-emoji {
+      font-size: 72px;
+      animation: emojiBounce 0.5s ease;
+    }
+
+    @keyframes emojiBounce {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+
+    .result-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .result-name {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text-dark);
+    }
+
+    .result-type-tag {
+      background: var(--secondary);
+      color: var(--primary);
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+
+    .result-body {
+      background: var(--bg-warm);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .result-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .calorie-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .calorie-icon {
+      font-size: 16px;
+    }
+
+    .calorie-text {
+      font-size: 13px;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .tags-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+
+    .tag-item {
+      background: var(--card-bg);
+      color: var(--text-muted);
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--secondary);
+    }
+
+    .result-comment {
+      font-size: 15px;
+      color: var(--primary);
+      font-weight: 700;
+      text-align: center;
+      font-style: italic;
+      margin-top: 8px;
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .confirm-btn,
+    .retry-btn {
+      flex: 1;
+      padding: 14px 16px;
+      border-radius: 24px;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .confirm-btn {
+      background: linear-gradient(135deg, var(--accent) 0%, #00C896 100%);
+      color: white;
+      box-shadow: 0 4px 16px rgba(6, 214, 160, 0.3);
+    }
+
+    .confirm-btn:active {
+      transform: scale(0.96);
+    }
+
+    .retry-btn {
+      background: linear-gradient(135deg, #FFB3C1 0%, var(--danger) 100%);
+      color: white;
+      box-shadow: 0 4px 16px rgba(239, 71, 111, 0.3);
+    }
+
+    .retry-btn:active {
+      transform: scale(0.96);
+    }
+
+    .retry-btn.disabled {
+      background: #ddd;
+      box-shadow: none;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    /* 最终弹窗 */
+    .final-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .final-modal.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-mask {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    .modal-content {
+      position: relative;
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      padding: 40px 32px;
+      width: 100%;
+      max-width: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      box-shadow: var(--shadow-strong);
+      transform: scale(0.8);
+      transition: transform 0.3s ease;
+    }
+
+    .final-modal.active .modal-content {
+      transform: scale(1);
+    }
+
+    .modal-emoji {
+      font-size: 64px;
+      animation: shake 0.5s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-10deg); }
+      75% { transform: rotate(10deg); }
+    }
+
+    .modal-text {
+      font-size: 20px;
+      color: var(--text-dark);
+      font-weight: 800;
+      text-align: center;
+      line-height: 1.5;
+      font-family: 'ZCOOL KuaiLe', cursive;
+    }
+
+    .modal-btn {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 12px 32px;
+      border-radius: 24px;
+      border: none;
+      box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .modal-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* ============ Community Page ============ */
+    .community-header {
+      background: linear-gradient(135deg, var(--secondary) 0%, #FFB347 100%);
+      padding: 24px 20px 16px;
+    }
+
+    .community-title {
+      font-family: 'ZCOOL KuaiLe', cursive;
+      font-size: 24px;
+      color: var(--text-dark);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Search Section */
+    .search-section {
+      padding: 16px 20px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--bg-warm);
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: var(--bg-warm);
+      border-radius: 24px;
+      padding: 10px 16px;
+      gap: 10px;
+    }
+
+    .search-icon {
+      font-size: 18px;
+    }
+
+    .search-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      color: var(--text-dark);
+      outline: none;
+    }
+
+    .search-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .clear-btn {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ddd;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 14px;
+      color: white;
+      transition: all 0.2s ease;
+    }
+
+    .clear-btn:hover {
+      background: var(--text-muted);
+    }
+
+    /* Filter Section */
+    .filter-section {
+      background: var(--card-bg);
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--bg-warm);
+    }
+
+    .filter-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .filter-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .filter-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .filter-scroll {
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: none;
+    }
+
+    .filter-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter-list {
+      display: inline-flex;
+      gap: 10px;
+    }
+
+    .filter-item {
+      padding: 8px 18px;
+      background: var(--bg-warm);
+      border-radius: 20px;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 2px solid transparent;
+    }
+
+    .filter-item:hover {
+      transform: translateY(-1px);
+    }
+
+    .filter-item.active {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+    }
+
+    .filter-item.tag-item {
+      background: #FFF0F0;
+      color: var(--primary);
+    }
+
+    .filter-item.tag-item.active {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: white;
+    }
+
+    /* Posts Section */
+    .posts-section {
+      padding: 16px 20px 80px;
+      background: var(--bg-cream);
+      min-height: 400px;
+    }
+
+    .posts-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .posts-section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-dark);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .post-count {
+      font-size: 12px;
+      color: var(--text-muted);
+      background: var(--card-bg);
+      padding: 4px 10px;
+      border-radius: 12px;
+    }
+
+    .posts-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .post-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      box-shadow: var(--shadow-soft);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .post-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-strong);
+    }
+
+    /* Post Header */
+    .post-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .author-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 12px;
+      background: var(--bg-warm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .author-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .author-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .post-time {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .location-tag {
+      display: flex;
+      align-items: center;
+      background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+      padding: 6px 12px;
+      border-radius: 16px;
+      gap: 4px;
+    }
+
+    .location-icon {
+      font-size: 13px;
+    }
+
+    .location-text {
+      font-size: 11px;
+      color: #2E7D32;
+      font-weight: 500;
+    }
+
+    /* Post Content */
+    .post-content {
+      margin-bottom: 12px;
+    }
+
+    .post-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .post-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Post Images */
+    .post-images {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .post-image {
+      width: 100px;
+      height: 100px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      background: var(--bg-warm);
+    }
+
+    .post-image.single {
+      width: 100%;
+      height: 200px;
+    }
+
+    /* Post Tags */
+    .post-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .post-tag {
+      padding: 4px 12px;
+      background: var(--bg-warm);
+      color: var(--primary);
+      font-size: 12px;
+      border-radius: 14px;
+    }
+
+    /* Post Actions */
+    .post-actions {
+      display: flex;
+      align-items: center;
+      padding-top: 12px;
+      border-top: 1px solid var(--bg-warm);
+    }
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      margin-right: 32px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .action-btn.liked .action-icon {
+      animation: heartBeat 0.3s ease;
+    }
+
+    @keyframes heartBeat {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+
+    .action-icon {
+      font-size: 18px;
+      margin-right: 6px;
+    }
+
+    .action-count {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .action-count.liked {
+      color: var(--danger);
+    }
+
+    .action-text {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Publish Button */
+    .publish-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 14px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .publish-btn:active {
+      transform: scale(0.96);
+    }
+
+    .post-count {
+      font-size: 12px;
+      color: var(--text-muted);
+      background: var(--bg-warm);
+      padding: 4px 10px;
+      border-radius: 12px;
+      margin-left: auto;
+      margin-right: 8px;
+    }
+
+    /* Empty State */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 80px 20px;
+      text-align: center;
+    }
+
+    .empty-icon {
+      font-size: 72px;
+      margin-bottom: 16px;
+    }
+
+    .empty-text {
+      font-size: 18px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .empty-hint {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* Load More */
+    .load-more, .loading, .no-more {
+      text-align: center;
+      padding: 24px 0;
+    }
+
+    .load-text, .loading-text, .no-more-text {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .load-text {
+      cursor: pointer;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* Create Post Modal */
+    .create-post-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 200;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .create-post-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .create-post-modal {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      width: 100%;
+      max-width: 390px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+    }
+
+    .create-post-overlay.active .create-post-modal {
+      transform: translateY(0);
+    }
+
+    .create-post-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--bg-warm);
+    }
+
+    .create-post-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .create-post-close {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-warm);
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+
+    .create-post-close:hover {
+      background: #ddd;
+      color: var(--text-dark);
+    }
+
+    .create-post-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px;
+    }
+
+    .create-post-section {
+      margin-bottom: 16px;
+    }
+
+    .create-post-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 8px;
+    }
+
+    .create-post-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid var(--bg-warm);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      color: var(--text-dark);
+      background: var(--bg-warm);
+      transition: all 0.2s ease;
+    }
+
+    .create-post-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: var(--card-bg);
+    }
+
+    .create-post-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .create-post-textarea {
+      width: 100%;
+      height: 100px;
+      padding: 12px 16px;
+      border: 2px solid var(--bg-warm);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      color: var(--text-dark);
+      background: var(--bg-warm);
+      resize: none;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .create-post-textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: var(--card-bg);
+    }
+
+    .create-post-textarea::placeholder {
+      color: var(--text-muted);
+    }
+
+    .create-post-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .post-tag-option {
+      padding: 6px 14px;
+      background: var(--bg-warm);
+      color: var(--text-muted);
+      font-size: 13px;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 2px solid transparent;
+    }
+
+    .post-tag-option:hover {
+      transform: translateY(-1px);
+    }
+
+    .post-tag-option.selected {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .post-tag-option.other-tag {
+      background: var(--bg-cream);
+      color: var(--primary);
+      border: 2px dashed var(--primary);
+    }
+
+    .post-tag-option.other-tag.selected {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: white;
+      border-style: solid;
+    }
+
+    .custom-tag-input {
+      display: block;
+    }
+
+    .create-post-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--bg-warm);
+    }
+
+    .create-post-submit {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: white;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      border-radius: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(255, 107, 53, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .create-post-submit:active {
+      transform: scale(0.98);
+    }
+
+    /* ============ Profile Page ============ */
+    .profile-header {
+      display: flex;
+      align-items: center;
+      padding: 24px 20px;
+      background: linear-gradient(135deg, var(--secondary) 0%, #FFB347 100%);
+    }
+
+    .profile-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--card-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      margin-right: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .profile-info {
+      flex: 1;
+    }
+
+    .profile-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 4px;
+    }
+
+    .profile-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .profile-edit-btn {
+      padding: 8px 16px;
+      background: var(--card-bg);
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .profile-stats {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--bg-warm);
+    }
+
+    .stat-item {
+      flex: 1;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .stat-divider {
+      width: 1px;
+      height: 40px;
+      background: var(--bg-warm);
+    }
+
+    .profile-section {
+      padding: 16px 20px;
+    }
+
+    .profile-section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 12px;
+      padding-left: 4px;
+    }
+
+    .profile-menu-list {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .profile-menu-item {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid var(--bg-warm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .profile-menu-item:last-child {
+      border-bottom: none;
+    }
+
+    .profile-menu-item:hover {
+      background: var(--bg-warm);
+    }
+
+    .menu-icon {
+      font-size: 20px;
+      margin-right: 12px;
+    }
+
+    .menu-text {
+      flex: 1;
+      font-size: 14px;
+      color: var(--text-dark);
+    }
+
+    .menu-arrow {
+      font-size: 18px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+      <button class="tab-btn active" data-tab="random" onclick="switchTab('random')">
+        <span class="tab-emoji">🎲</span>
+        <span>随机选</span>
+      </button>
+      <button class="tab-btn" data-tab="community" onclick="switchTab('community')">
+        <span class="tab-emoji">👥</span>
+        <span>社区</span>
+      </button>
+      <button class="tab-btn" data-tab="profile" onclick="switchTab('profile')">
+        <span class="tab-emoji">👤</span>
+        <span>我的</span>
+      </button>
+    </div>
+
+    <!-- Random Pick Page -->
+    <div id="random-page" class="tab-content active">
+      <div class="header">
+        <h1 class="title">今天吃什么</h1>
+        <div class="time-badge">
+          <span class="time-text" id="time-period-name">推荐</span>
+        </div>
+      </div>
+
+      <!-- 冷却卡片 -->
+      <div class="cool-down-card" id="cool-down-card" style="display: none;">
+        <div class="cool-down-icon" id="cool-down-icon">😊</div>
+        <div class="cool-down-title" id="cool-down-title">享受美食中</div>
+        <div class="cool-down-time" id="cool-down-time">3<span>:00</span></div>
+        <div class="cool-down-hint" id="cool-down-hint">3分钟后再来~</div>
+      </div>
+
+      <!-- 时间段选择 -->
+      <div class="time-period-section" id="time-period-section">
+        <div class="time-period-header">
+          <span class="time-period-title">用餐时段</span>
+          <span class="time-period-hint">可选</span>
+        </div>
+        <div class="time-period-tabs">
+          <div class="time-period-tab active" data-period="all" onclick="selectTimePeriod('all')">
+            🎲 全部
+          </div>
+          <div class="time-period-tab" data-period="morning" onclick="selectTimePeriod('morning')">
+            🌅 早餐
+          </div>
+          <div class="time-period-tab" data-period="lunch" onclick="selectTimePeriod('lunch')">
+            ☀️ 午餐
+          </div>
+          <div class="time-period-tab" data-period="dinner" onclick="selectTimePeriod('dinner')">
+            🌙 晚餐
+          </div>
+        </div>
+      </div>
+
+      <!-- 类型选择 -->
+      <div class="type-section" id="type-section">
+        <div class="section-header">
+          <span class="section-title">美食类型</span>
+          <span class="hint-text">可多选</span>
+        </div>
+        <div class="type-scroll-wrapper">
+          <button class="scroll-btn disabled" id="scroll-left-btn" onclick="scrollLeft()">
+            ‹
+          </button>
+          <div class="type-scroll" id="type-scroll" onscroll="handleTypeScroll()">
+            <div class="type-scroll-inner" id="type-scroll-inner">
+            </div>
+          </div>
+          <button class="scroll-btn" id="scroll-right-btn" onclick="scrollRight()">
+            ›
+          </button>
+        </div>
+      </div>
+
+      <!-- 抽取模块 -->
+      <div class="roller-section" id="roller-section">
+        <div class="filter-status" id="filter-status">
+          <div class="filter-status-title">当前筛选</div>
+          <div class="filter-status-content" id="filter-status-content">
+            <span class="filter-tag all">全部时段</span>
+            <span class="filter-tag all">全部类型</span>
+          </div>
+        </div>
+
+        <div class="roller-wrapper">
+          <div class="roller-decoration top">
+            <div class="decoration-dots">
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+            </div>
+          </div>
+
+          <div class="roller-container">
+            <div class="roller-mask top"></div>
+            <div class="roller-mask bottom"></div>
+            <div class="roller-track" id="roller-track">
+            </div>
+            <div class="roller-indicator">
+              <div class="indicator-left"></div>
+              <div class="indicator-line"></div>
+              <div class="indicator-right"></div>
+            </div>
+          </div>
+
+          <div class="roller-decoration bottom">
+            <div class="decoration-dots">
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-area">
+          <button class="start-btn" id="start-btn" onclick="startRoll()">
+            <span class="btn-emoji">🎯</span>
+            <span id="start-btn-text">开始抽取</span>
+          </button>
+          <div class="rolling-tip" id="rolling-tip" style="display: none;">美食正在挑选中...</div>
+          <div class="retry-info" id="retry-info" style="display: none;">
+            <span class="retry-icon">🔄</span>
+            <span class="retry-count" id="retry-count-text">剩余 3 次</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 结果卡片 -->
+      <div class="result-overlay" id="result-overlay">
+        <div class="result-card">
+          <div class="result-header">
+            <span class="result-emoji" id="result-emoji">🍜</span>
+            <div class="result-title-row">
+              <span class="result-name" id="result-name">红烧牛肉面</span>
+              <span class="result-type-tag" id="result-type">面食</span>
+            </div>
+          </div>
+          <div class="result-body">
+            <span class="result-desc" id="result-desc">浓郁牛肉汤配劲道面条，经典美味！</span>
+            <div class="calorie-row">
+              <span class="calorie-icon">🔥</span>
+              <span class="calorie-text" id="result-calories">约450大卡/份</span>
+            </div>
+            <div class="tags-row" id="result-tags">
+              <span class="tag-item">管饱</span>
+              <span class="tag-item">经典</span>
+            </div>
+            <span class="result-comment" id="result-comment">今天的快乐源泉！</span>
+          </div>
+          <div class="result-actions">
+            <button class="confirm-btn" onclick="confirmChoice()">✓ 就这个了</button>
+            <button class="retry-btn" id="retry-btn" onclick="retryChoice()">🔄 再来一次</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 最终弹窗 -->
+      <div class="final-modal" id="final-modal">
+        <div class="modal-mask" onclick="closeFinalModal()"></div>
+        <div class="modal-content">
+          <span class="modal-emoji">😤</span>
+          <span class="modal-text">这么作还是饿着吧</span>
+          <button class="modal-btn" onclick="onFinalModalConfirm()">好吧好吧</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Community Page -->
+    <div id="community-page" class="tab-content">
+      <div class="community-header">
+        <div class="community-title">
+          <span>🍽️</span>
+          <span>美食社区</span>
+        </div>
+      </div>
+
+      <!-- Search Section -->
+      <div class="search-section">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            class="search-input" 
+            placeholder="搜索美食、地点..." 
+            id="search-input"
+            oninput="handleSearchInput(event)"
+          />
+          <div class="clear-btn" id="clear-search-btn" style="display: none;" onclick="clearSearch()">
+            ✕
+          </div>
+        </div>
+      </div>
+
+      <!-- City Filter Section -->
+      <div class="filter-section">
+        <div class="filter-header">
+          <span class="filter-title">📍 按城市筛选</span>
+          <span class="filter-hint">（可选）</span>
+        </div>
+        <div class="filter-scroll">
+          <div class="filter-list" id="city-filter-list">
+          </div>
+        </div>
+      </div>
+
+      <!-- Hot Tags Filter Section -->
+      <div class="filter-section">
+        <div class="filter-header">
+          <span class="filter-title">🏷️ 热门标签</span>
+        </div>
+        <div class="filter-scroll">
+          <div class="filter-list" id="tag-filter-list">
+          </div>
+        </div>
+      </div>
+
+      <!-- Posts Section -->
+      <div class="posts-section">
+        <div class="posts-section-header">
+          <span class="posts-section-title">📝 最新分享</span>
+          <span class="post-count" id="post-count">共 0 条</span>
+          <button class="publish-btn" onclick="handleCreatePost()">
+            <span>✏️</span>
+            <span>发布</span>
+          </button>
+        </div>
+        <div class="posts-list" id="posts-list">
+        </div>
+        <div class="load-more" id="load-more" style="display: none;" onclick="loadMore()">
+          <span class="load-text">加载更多</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Page -->
+    <div id="profile-page" class="tab-content">
+      <div class="profile-header">
+        <div class="profile-avatar">😊</div>
+        <div class="profile-info">
+          <div class="profile-name">美食爱好者</div>
+          <div class="profile-desc">记录每一顿美味~</div>
+        </div>
+        <button class="profile-edit-btn" onclick="showEditProfile()">编辑</button>
+      </div>
+
+      <div class="profile-stats">
+        <div class="stat-item">
+          <div class="stat-value" id="stat-posts">0</div>
+          <div class="stat-label">发布</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-likes">0</div>
+          <div class="stat-label">获赞</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-rolls">0</div>
+          <div class="stat-label">抽取</div>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <div class="profile-section-title">📋 我的记录</div>
+        <div class="profile-menu-list">
+          <div class="profile-menu-item" onclick="showMyPosts()">
+            <span class="menu-icon">📝</span>
+            <span class="menu-text">我的发布</span>
+            <span class="menu-arrow">›</span>
+          </div>
+          <div class="profile-menu-item" onclick="showMyFavorites()">
+            <span class="menu-icon">❤️</span>
+            <span class="menu-text">我的收藏</span>
+            <span class="menu-arrow">›</span>
+          </div>
+          <div class="profile-menu-item" onclick="showHistory()">
+            <span class="menu-icon">🕐</span>
+            <span class="menu-text">抽取历史</span>
+            <span class="menu-arrow">›</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <div class="profile-section-title">⚙️ 设置</div>
+        <div class="profile-menu-list">
+          <div class="profile-menu-item" onclick="showSettings()">
+            <span class="menu-icon">🔔</span>
+            <span class="menu-text">消息通知</span>
+            <span class="menu-arrow">›</span>
+          </div>
+          <div class="profile-menu-item" onclick="showPrivacy()">
+            <span class="menu-icon">🔒</span>
+            <span class="menu-text">隐私设置</span>
+            <span class="menu-arrow">›</span>
+          </div>
+          <div class="profile-menu-item" onclick="showAbout()">
+            <span class="menu-icon">ℹ️</span>
+            <span class="menu-text">关于今天吃什么</span>
+            <span class="menu-arrow">›</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 发布帖子弹窗 -->
+    <div class="create-post-overlay" id="create-post-overlay">
+      <div class="create-post-modal">
+        <div class="create-post-header">
+          <span class="create-post-title">分享美食</span>
+          <span class="create-post-close" onclick="closeCreatePost()">✕</span>
+        </div>
+        <div class="create-post-body">
+          <div class="create-post-section">
+            <div class="create-post-label">标题</div>
+            <input type="text" class="create-post-input" id="post-title-input" placeholder="给美食起个名字~" maxlength="30" />
+          </div>
+          <div class="create-post-section">
+            <div class="create-post-label">描述</div>
+            <textarea class="create-post-textarea" id="post-content-input" placeholder="分享你发现的美食体验..." maxlength="200"></textarea>
+          </div>
+          <div class="create-post-section">
+            <div class="create-post-label">标签</div>
+            <div class="create-post-tags" id="post-tags-select">
+              <span class="post-tag-option" data-tag="火锅">火锅</span>
+              <span class="post-tag-option" data-tag="烧烤">烧烤</span>
+              <span class="post-tag-option" data-tag="甜品">甜品</span>
+              <span class="post-tag-option" data-tag="奶茶">奶茶</span>
+              <span class="post-tag-option" data-tag="快餐">快餐</span>
+              <span class="post-tag-option" data-tag="轻食">轻食</span>
+              <span class="post-tag-option" data-tag="川菜">川菜</span>
+              <span class="post-tag-option" data-tag="小吃">小吃</span>
+              <span class="post-tag-option" data-tag="聚餐">聚餐</span>
+              <span class="post-tag-option" data-tag="下午茶">下午茶</span>
+              <span class="post-tag-option other-tag" data-tag="other">+ 其他</span>
+            </div>
+            <input type="text" class="create-post-input custom-tag-input" id="custom-tag-input" placeholder="输入自定义标签（选填）" maxlength="10" style="display: none; margin-top: 8px;" />
+          </div>
+          <div class="create-post-section">
+            <div class="create-post-label">城市</div>
+            <input type="text" class="create-post-input" id="post-city-input" placeholder="输入你所在的城市" maxlength="20" />
+          </div>
+        </div>
+        <div class="create-post-footer">
+          <button class="create-post-submit" onclick="submitPost()">发布</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==================== State ====================
+    const state = {
+      selectedTimePeriod: 'all',
+      selectedTypes: [],
+      retryCount: 0,
+      maxRetries: 3,
+      isRolling: false,
+      rollInterval: null,
+      isCoolingDown: false,
+      coolDownSeconds: 0,
+      coolDownInterval: null,
+      coolDownType: '',
+      currentFood: null,
+      currentTab: 'random',
+      // Community state
+      communitySearchKeyword: '',
+      selectedCity: null,
+      selectedTag: null,
+      postsDisplayed: 10,
+      posts: [],
+      // Profile state
+      totalRolls: 0,
+      rollHistory: []
+    };
+
+    // ==================== Food Data ====================
+    const foods = [
+      { id: 1, name: '小笼包', type: '早点', emoji: '🥟', desc: '薄皮大馅汤汁多，一口一个满足', calories: '约200大卡/4个', tags: ['早点', '管饱'], periods: ['morning'] },
+      { id: 2, name: '油条豆浆', type: '早点', emoji: '🥖', desc: '酥脆油条配香浓豆浆，经典中式早餐', calories: '约400大卡/份', tags: ['早点', '管饱'], periods: ['morning'] },
+      { id: 3, name: '皮蛋瘦肉粥', type: '早点', emoji: '🥣', desc: '绵密温润的咸粥，养胃又暖心', calories: '约200大卡/碗', tags: ['清淡', '养生'], periods: ['morning'] },
+      { id: 4, name: '茶叶蛋', type: '早点', emoji: '🥚', desc: '香气四溢的卤制鸡蛋，早餐必备', calories: '约80大卡/个', tags: ['早点', '实惠'], periods: ['morning'] },
+      { id: 5, name: '煎蛋吐司', type: '面点', emoji: '🍞', desc: '金黄酥脆的吐司配流心煎蛋', calories: '约300大卡/份', tags: ['西式', '快手'], periods: ['morning'] },
+      { id: 6, name: '手抓饼', type: '面点', emoji: '🫓', desc: '层层分明的酥脆饼皮，卷啥都香', calories: '约280大卡/份', tags: ['早点', '快手'], periods: ['morning'] },
+      { id: 7, name: '煎饼果子', type: '面点', emoji: '🥞', desc: '酥脆薄饼配鸡蛋香肠，街头美食扛把子', calories: '约350大卡/份', tags: ['早点', '实惠'], periods: ['morning'] },
+      { id: 8, name: '葱油饼', type: '面点', emoji: '🥨', desc: '层层酥脆，葱香四溢', calories: '约250大卡/张', tags: ['早点', '香'], periods: ['morning'] },
+      { id: 9, name: '鸡蛋灌饼', type: '面点', emoji: '🍳', desc: '酥脆饼皮裹着嫩滑鸡蛋', calories: '约280大卡/份', tags: ['早点', '管饱'], periods: ['morning'] },
+      { id: 10, name: '馄饨', type: '面点', emoji: '🥟', desc: '薄皮大馅的汤煮小吃', calories: '约200大卡/10个', tags: ['早点', '暖胃'], periods: ['morning'] },
+
+      { id: 11, name: '宫保鸡丁', type: '川菜', emoji: '🍗', desc: '香辣开胃的花生鸡丁，下饭神器', calories: '约450大卡/份', tags: ['下饭菜', '聚餐必备'], periods: ['lunch'] },
+      { id: 12, name: '黄焖鸡米饭', type: '快餐', emoji: '🍚', desc: '软糯鸡肉配香喷喷米饭，份量十足', calories: '约600大卡/份', tags: ['管饱', '实惠'], periods: ['lunch'] },
+      { id: 13, name: '螺蛳粉', type: '小吃', emoji: '🍜', desc: '酸辣鲜香的广西特色，闻着臭吃着香', calories: '约400大卡/份', tags: ['重口味', '上头'], periods: ['lunch'] },
+      { id: 14, name: '肉夹馍', type: '小吃', emoji: '🥙', desc: '酥脆白吉馍夹卤香肉，香到迷糊', calories: '约320大卡/个', tags: ['管饱', '实惠'], periods: ['lunch'] },
+      { id: 15, name: '麻辣香锅', type: '川菜', emoji: '🌶️', desc: '香辣过瘾的炒制美食，食材丰富', calories: '约500大卡/份', tags: ['下饭菜', '重口味'], periods: ['lunch'] },
+      { id: 16, name: '红烧牛肉面', type: '面点', emoji: '🍲', desc: '浓郁牛肉汤配劲道面条，经典美味', calories: '约450大卡/碗', tags: ['管饱', '经典'], periods: ['lunch'] },
+      { id: 17, name: '咖喱饭', type: '快餐', emoji: '🍛', desc: '香浓咖喱配米饭，异域风味', calories: '约500大卡/份', tags: ['管饱', '异域'], periods: ['lunch'] },
+      { id: 18, name: '卤肉饭', type: '快餐', emoji: '🥘', desc: '肥而不腻的卤肉配香米饭', calories: '约480大卡/份', tags: ['下饭菜', '实惠'], periods: ['lunch'] },
+      { id: 19, name: '酸菜鱼', type: '川菜', emoji: '🐟', desc: '酸辣开胃的鲜嫩鱼片，经典川味', calories: '约380大卡/份', tags: ['下饭菜', '开胃'], periods: ['lunch'] },
+      { id: 20, name: '麻婆豆腐', type: '川菜', emoji: '🧈', desc: '麻辣鲜香的经典川菜，下饭神器', calories: '约250大卡/份', tags: ['下饭菜', '经典'], periods: ['lunch'] },
+      { id: 21, name: '回锅肉', type: '川菜', emoji: '🥓', desc: '肥而不腻的川味经典，超级下饭', calories: '约350大卡/份', tags: ['下饭菜', '聚餐'], periods: ['lunch'] },
+      { id: 22, name: '重庆小面', type: '面点', emoji: '🍜', desc: '麻辣鲜香的重庆特色面食', calories: '约400大卡/碗', tags: ['管饱', '重口味'], periods: ['lunch'] },
+      { id: 23, name: '酸辣粉', type: '小吃', emoji: '🍜', desc: '酸辣爽口的粉丝小吃', calories: '约300大卡/份', tags: ['开胃', '重口味'], periods: ['lunch'] },
+      { id: 24, name: '盖浇饭', type: '快餐', emoji: '🍱', desc: '菜浇在饭上，简单美味', calories: '约450大卡/份', tags: ['管饱', '实惠'], periods: ['lunch'] },
+      { id: 25, name: '蛋炒饭', type: '快餐', emoji: '🍳', desc: '粒粒分明的蛋炒饭，经典快手菜', calories: '约400大卡/份', tags: ['管饱', '快手'], periods: ['lunch'] },
+      { id: 26, name: '炒面', type: '面点', emoji: '🍝', desc: '酱香浓郁的劲道炒面', calories: '约380大卡/份', tags: ['管饱', '快手'], periods: ['lunch'] },
+      { id: 27, name: '水饺', type: '面点', emoji: '🥟', desc: '皮薄馅大的传统水饺', calories: '约200大卡/10个', tags: ['传统', '管饱'], periods: ['lunch'] },
+      { id: 28, name: '煎饺', type: '面点', emoji: '🥟', desc: '底部金黄酥脆的煎制饺子', calories: '约220大卡/10个', tags: ['香', '管饱'], periods: ['lunch'] },
+      { id: 29, name: '蒸饺', type: '面点', emoji: '🥟', desc: '清淡营养的清蒸饺子', calories: '约180大卡/10个', tags: ['清淡', '健康'], periods: ['lunch', 'morning'] },
+      { id: 30, name: '过桥米线', type: '面点', emoji: '🍜', desc: '云南特色，过桥食用', calories: '约380大卡/份', tags: ['清淡', '管饱'], periods: ['lunch'] },
+
+      { id: 31, name: '重庆老火锅', type: '火锅', emoji: '🔥', desc: '麻辣鲜香的重庆特色，牛油锅底', calories: '约850大卡/份', tags: ['聚餐', '热闹'], periods: ['dinner'] },
+      { id: 32, name: '潮汕牛肉火锅', type: '火锅', emoji: '🥩', desc: '清汤底配现切牛肉，鲜嫩可口', calories: '约750大卡/份', tags: ['清淡', '聚餐'], periods: ['dinner'] },
+      { id: 33, name: '串串香', type: '串串', emoji: '🍢', desc: '小竹签串起各种食材，边吃边涮', calories: '约450大卡/份', tags: ['聚餐', '热闹'], periods: ['dinner'] },
+      { id: 34, name: '冒菜', type: '串串', emoji: '🍲', desc: '麻辣鲜香的成都特色，一菜一格', calories: '约350大卡/份', tags: ['重口味', '下饭'], periods: ['dinner'] },
+      { id: 35, name: '羊肉串', type: '烧烤', emoji: '🍢', desc: '孜然飘香的炭火烤串，夜宵首选', calories: '约350大卡/5串', tags: ['夜宵', '聚餐'], periods: ['dinner'] },
+      { id: 36, name: '烤鸡翅', type: '烧烤', emoji: '🍗', desc: '外焦里嫩的蜜汁烤鸡翅', calories: '约280大卡/4个', tags: ['夜宵', '小食'], periods: ['dinner'] },
+      { id: 37, name: '万州烤鱼', type: '烧烤', emoji: '🐟', desc: '外焦里嫩的烤鱼，配菜丰富', calories: '约550大卡/份', tags: ['聚餐', '硬菜'], periods: ['dinner'] },
+      { id: 38, name: '蒜蓉烤生蚝', type: '烧烤', emoji: '🦪', desc: '鲜嫩多汁的烤制海鲜，蒜香四溢', calories: '约220大卡/4个', tags: ['海鲜', '聚餐'], periods: ['dinner'] },
+      { id: 39, name: '烤五花肉', type: '烧烤', emoji: '🥓', desc: '滋滋冒油的五花肉，肥而不腻', calories: '约380大卡/份', tags: ['下饭菜', '聚餐'], periods: ['dinner'] },
+      { id: 40, name: '烤羊腿', type: '烧烤', emoji: '🍖', desc: '皮脆肉嫩的烤制羊腿，香气四溢', calories: '约650大卡/份', tags: ['硬菜', '聚餐'], periods: ['dinner'] },
+      { id: 41, name: '地三鲜', type: '家常菜', emoji: '🥘', desc: '经典东北菜，鲜香下饭', calories: '约300大卡/份', tags: ['家常菜', '清淡'], periods: ['dinner'] },
+      { id: 42, name: '红烧肉', type: '家常菜', emoji: '🥓', desc: '肥而不腻的经典美味，入口即化', calories: '约500大卡/份', tags: ['下饭菜', '硬菜'], periods: ['dinner'] },
+      { id: 43, name: '麻辣烫', type: '串串', emoji: '🍲', desc: '万物皆可烫的川味小吃', calories: '约400大卡/份', tags: ['重口味', '热闹'], periods: ['dinner'] },
+      { id: 44, name: '重庆鸡公煲', type: '川菜', emoji: '🍲', desc: '重庆特色美食，麻辣鲜香', calories: '约450大卡/份', tags: ['聚餐', '重口味'], periods: ['dinner'] },
+      { id: 45, name: '北京烤鸭', type: '家常菜', emoji: '🦆', desc: '皮脆肉嫩的经典名菜', calories: '约600大卡/份', tags: ['聚餐', '硬菜'], periods: ['dinner'] },
+      { id: 46, name: '水煮鱼', type: '川菜', emoji: '🐟', desc: '麻辣鲜嫩的水煮鱼片', calories: '约450大卡/份', tags: ['下饭菜', '重口味'], periods: ['dinner'] },
+      { id: 47, name: '毛血旺', type: '川菜', emoji: '🍲', desc: '麻辣鲜香的川味锅菜', calories: '约400大卡/份', tags: ['下饭菜', '重口味'], periods: ['dinner'] },
+      { id: 48, name: '酸汤肥牛', type: '川菜', emoji: '🥘', desc: '酸辣开胃的肥牛料理', calories: '约420大卡/份', tags: ['下饭菜', '开胃'], periods: ['dinner'] },
+      { id: 49, name: '铁板牛排', type: '快餐', emoji: '🥩', desc: '滋滋作响的铁板牛排', calories: '约450大卡/份', tags: ['西式', '管饱'], periods: ['dinner'] },
+      { id: 50, name: '糖醋里脊', type: '家常菜', emoji: '🥘', desc: '酸甜酥脆的经典鲁菜', calories: '约380大卡/份', tags: ['下饭菜', '酸甜'], periods: ['dinner'] },
+
+      { id: 51, name: '珍珠奶茶', type: '奶茶', emoji: '🧋', desc: '香浓丝滑的奶茶配Q弹珍珠，甜蜜暴击', calories: '约350大卡/杯', tags: ['下午茶', '续命水'], periods: ['morning', 'lunch', 'dinner'] },
+      { id: 52, name: '芝士蛋糕', type: '甜品', emoji: '🍰', desc: '绵密细腻的奶酪香气，入口即化的幸福感', calories: '约300大卡/块', tags: ['下午茶', '治愈系'], periods: ['morning', 'lunch'] },
+      { id: 53, name: '关东煮', type: '小吃', emoji: '🍢', desc: '热气腾腾的汤煮小吃，暖胃又暖心', calories: '约250大卡/份', tags: ['清淡', '暖胃'], periods: ['morning', 'lunch', 'dinner'] },
+      { id: 54, name: '水果沙拉', type: '轻食', emoji: '🥗', desc: '新鲜水果大集合，清爽无负担', calories: '约150大卡/份', tags: ['健康', '轻体'], periods: ['morning', 'lunch'] },
+      { id: 55, name: '三明治', type: '轻食', emoji: '🥪', desc: '两片面包夹万物，营养均衡', calories: '约250大卡/份', tags: ['轻食', '方便'], periods: ['morning', 'lunch'] },
+      { id: 56, name: '披萨', type: '快餐', emoji: '🍕', desc: '芝士拉丝的意大利经典，馅料丰富', calories: '约700大卡/份', tags: ['聚餐', '西式'], periods: ['lunch', 'dinner'] },
+      { id: 57, name: '汉堡薯条', type: '快餐', emoji: '🍔', desc: '经典美式快餐组合，快乐源泉', calories: '约650大卡/份', tags: ['快餐', '解压'], periods: ['lunch', 'dinner'] },
+      { id: 58, name: '冰淇淋', type: '甜品', emoji: '🍦', desc: '丝滑冰凉的甜蜜诱惑，夏日必备', calories: '约200大卡/球', tags: ['消暑', '治愈'], periods: ['lunch', 'dinner'] },
+      { id: 59, name: '杨枝甘露', type: '奶茶', emoji: '🥭', desc: '芒果西柚椰汁的完美组合，清甜解腻', calories: '约280大卡/杯', tags: ['下午茶', '清爽'], periods: ['lunch'] },
+      { id: 60, name: '水果捞', type: '轻食', emoji: '🍓', desc: '新鲜水果搭配酸奶，清爽解腻', calories: '约180大卡/份', tags: ['健康', '清爽'], periods: ['lunch'] },
+      { id: 61, name: '马卡龙', type: '甜品', emoji: '🧁', desc: '精致法式小甜点，酥脆甜蜜', calories: '约100大卡/个', tags: ['精致', '下午茶'], periods: ['lunch'] },
+      { id: 62, name: '甜甜圈', type: '甜品', emoji: '🍩', desc: '甜蜜松软的美式甜点', calories: '约200大卡/个', tags: ['甜品', '下午茶'], periods: ['lunch'] },
+      { id: 63, name: '美式咖啡', type: '奶茶', emoji: '☕', desc: '香浓咖啡，提神醒脑，经典之选', calories: '约50大卡/杯', tags: ['提神', '下午茶'], periods: ['morning', 'lunch'] },
+      { id: 64, name: '抹茶拿铁', type: '奶茶', emoji: '🍵', desc: '清新抹茶与牛奶的完美融合', calories: '约250大卡/杯', tags: ['下午茶', '清新'], periods: ['lunch'] },
+      { id: 65, name: '葡式蛋挞', type: '甜品', emoji: '🥧', desc: '酥脆挞皮配嫩滑蛋液，奶香浓郁', calories: '约150大卡/个', tags: ['甜品', '下午茶'], periods: ['lunch'] },
+      { id: 66, name: '巧克力蛋糕', type: '甜品', emoji: '🍫', desc: '浓郁巧克力风味，甜蜜满足', calories: '约350大卡/块', tags: ['甜品', '治愈'], periods: ['lunch', 'dinner'] },
+      { id: 67, name: '爆米花', type: '小吃', emoji: '🍿', desc: '香甜酥脆的观影必备', calories: '约300大卡/桶', tags: ['零食', '观影'], periods: ['lunch', 'dinner'] },
+      { id: 68, name: '可颂', type: '面点', emoji: '🥐', desc: '层层酥脆的丹麦点心', calories: '约280大卡/个', tags: ['西式', '下午茶'], periods: ['morning', 'lunch'] },
+      { id: 69, name: '柠檬水', type: '奶茶', emoji: '🥤', desc: '清新柠檬搭配冰块，清爽解渴', calories: '约80大卡/杯', tags: ['清爽', '解渴'], periods: ['morning', 'lunch', 'dinner'] },
+      { id: 70, name: '鲜榨果汁', type: '奶茶', emoji: '🍹', desc: '新鲜水果鲜榨，天然健康', calories: '约120大卡/杯', tags: ['健康', '天然'], periods: ['morning', 'lunch'] },
+      { id: 71, name: '布丁', type: '甜品', emoji: '🍮', desc: '嫩滑香甜的日式甜点', calories: '约120大卡/份', tags: ['甜品', '嫩滑'], periods: ['lunch'] },
+      { id: 72, name: '曲奇饼干', type: '甜品', emoji: '🍪', desc: '香脆可口的烘焙小点心', calories: '约150大卡/5块', tags: ['零食', '下午茶'], periods: ['lunch'] },
+      { id: 73, name: '蛋黄酥', type: '甜品', emoji: '🥮', desc: '层层酥脆的中式点心，咸甜交织', calories: '约180大卡/个', tags: ['传统', '精致'], periods: ['lunch'] },
+      { id: 74, name: '烤红薯', type: '小吃', emoji: '🍠', desc: '香甜软糯的冬日必备', calories: '约150大卡/个', tags: ['零食', '暖胃'], periods: ['morning', 'lunch', 'dinner'] },
+      { id: 75, name: '糖炒栗子', type: '小吃', emoji: '🥜', desc: '香甜软糯的传统小吃', calories: '约200大卡/份', tags: ['零食', '传统'], periods: ['lunch', 'dinner'] },
+      { id: 76, name: '珍珠奶盖', type: '奶茶', emoji: '🍵', desc: '浓郁奶盖配香浓茶底', calories: '约300大卡/杯', tags: ['下午茶', '浓郁'], periods: ['lunch'] },
+      { id: 77, name: '华夫饼', type: '甜品', emoji: '🧇', desc: '香甜酥脆的比利时小吃', calories: '约280大卡/份', tags: ['下午茶', '西式'], periods: ['morning', 'lunch'] },
+      { id: 78, name: '蔬菜沙拉', type: '轻食', emoji: '🥗', desc: '新鲜蔬菜搭配低脂酱汁', calories: '约120大卡/份', tags: ['健康', '轻体'], periods: ['lunch'] },
+      { id: 79, name: '兰州拉面', type: '面点', emoji: '🍜', desc: '劲道面条配浓郁牛肉汤', calories: '约400大卡/碗', tags: ['经典', '管饱'], periods: ['lunch', 'dinner'] },
+      { id: 80, name: '牛肉拉面', type: '面点', emoji: '🍜', desc: '浓郁牛肉汤配劲道面条', calories: '约450大卡/碗', tags: ['经典', '管饱'], periods: ['lunch', 'dinner'] }
+    ];
+
+    // ==================== Food Types ====================
+    const periodTypes = {
+      morning: ['早点', '面点', '奶茶', '甜品', '轻食'],
+      lunch: ['川菜', '快餐', '面点', '小吃', '奶茶', '甜品', '轻食', '家常菜'],
+      dinner: ['火锅', '串串', '烧烤', '川菜', '家常菜', '快餐', '面点', '甜品', '小吃', '奶茶'],
+      all: ['川菜', '火锅', '串串', '烧烤', '快餐', '小吃', '轻食', '面点', '奶茶', '甜品', '早点', '家常菜']
+    };
+
+    const typeEmojis = {
+      '奶茶': '🧋',
+      '甜品': '🍰',
+      '火锅': '🔥',
+      '串串': '🍢',
+      '川菜': '🌶️',
+      '快餐': '🍔',
+      '小吃': '🍢',
+      '烧烤': '🍖',
+      '轻食': '🥗',
+      '面点': '🥟',
+      '早点': '🥖',
+      '家常菜': '🏠'
+    };
+
+    // ==================== Community Data ====================
+    state.posts = [
+      {
+        id: 1,
+        title: '发现一家超棒的火锅店！',
+        content: '这家重庆老火锅真的太正宗了，毛肚七上八下刚刚好，麻辣鲜香，辣得过瘾！环境也不错，适合朋友聚餐。',
+        images: ['https://images.unsplash.com/photo-1563245372-f21724e3856d?w=400'],
+        author: {
+          nickname: '吃货小王',
+          avatar: '😎'
+        },
+        location: {
+          city: '北京',
+          district: '朝阳区'
+        },
+        tags: ['火锅', '聚餐', '重口味'],
+        likes: 128,
+        comments: [
+          { id: 1, author: '美食达人', content: '看起来好诱人！', createTime: '2024-01-15 14:30' }
+        ],
+        createTime: '2024-01-15 12:00',
+        isLiked: false
+      },
+      {
+        id: 2,
+        title: '下午茶时间到~',
+        content: '这家甜品店的芝士蛋糕绝了，绵密细腻，入口即化，配上一杯珍珠奶茶，完美的下午时光！',
+        images: ['https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=400'],
+        author: {
+          nickname: '甜甜圈',
+          avatar: '😊'
+        },
+        location: {
+          city: '上海',
+          district: '静安区'
+        },
+        tags: ['甜品', '下午茶', '治愈系'],
+        likes: 89,
+        comments: [],
+        createTime: '2024-01-14 16:20',
+        isLiked: false
+      },
+      {
+        id: 3,
+        title: '路边摊也有大美味',
+        content: '公司楼下新开的煎饼果子摊，老板手艺很好，加肠加蛋才8块钱，管饱！',
+        images: [],
+        author: {
+          nickname: '打工人',
+          avatar: '💪'
+        },
+        location: null,
+        tags: ['早点', '实惠', '小吃'],
+        likes: 56,
+        comments: [],
+        createTime: '2024-01-14 08:30',
+        isLiked: false
+      },
+      {
+        id: 4,
+        title: '周末BBQ太开心了！',
+        content: '和朋友们一起烧烤，羊肉串、烤鸡翅、烤五花肉，吃到撑！',
+        images: [
+          'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400',
+          'https://images.unsplash.com/photo-1544025162-d76694265947?w=400'
+        ],
+        author: {
+          nickname: '烧烤达人',
+          avatar: '🔥'
+        },
+        location: {
+          city: '广州',
+          district: '天河区'
+        },
+        tags: ['烧烤', '聚餐', '夜宵'],
+        likes: 234,
+        comments: [
+          { id: 1, author: '馋猫', content: '看着就香！', createTime: '2024-01-13 20:00' }
+        ],
+        createTime: '2024-01-13 19:00',
+        isLiked: false
+      },
+      {
+        id: 5,
+        title: '健康轻食也可以很好吃',
+        content: '这家轻食店的蔬菜沙拉和三明治都不错，新鲜食材，健康又美味！',
+        images: ['https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400'],
+        author: {
+          nickname: '减肥ing',
+          avatar: '🥗'
+        },
+        location: {
+          city: '深圳',
+          district: '南山区'
+        },
+        tags: ['轻食', '健康', '轻体'],
+        likes: 78,
+        comments: [],
+        createTime: '2024-01-12 12:00',
+        isLiked: false
+      },
+      {
+        id: 6,
+        title: '早餐来一碗皮蛋瘦肉粥',
+        content: '暖胃又暖心的早餐，绵密温润，配上油条，完美！',
+        images: [],
+        author: {
+          nickname: '早起鸟',
+          avatar: '🌅'
+        },
+        location: {
+          city: '杭州',
+          district: '西湖区'
+        },
+        tags: ['早点', '养生', '清淡'],
+        likes: 45,
+        comments: [],
+        createTime: '2024-01-11 07:30',
+        isLiked: false
+      },
+      {
+        id: 7,
+        title: '这个汉堡太满足了！',
+        content: '厚厚的肉饼、芝士、生菜、番茄，一口下去满满的幸福感，太解压了！',
+        images: ['https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400'],
+        author: {
+          nickname: '汉堡控',
+          avatar: '🍔'
+        },
+        location: {
+          city: '北京',
+          district: '海淀区'
+        },
+        tags: ['快餐', '解压', '西式'],
+        likes: 167,
+        comments: [
+          { id: 1, author: '薯条爱好者', content: '我也想吃！', createTime: '2024-01-10 15:00' }
+        ],
+        createTime: '2024-01-10 12:30',
+        isLiked: false
+      },
+      {
+        id: 8,
+        title: '串串香真的太适合聚会了',
+        content: '想吃什么拿什么，边吃边聊，热闹非凡！麻辣鲜香，一菜一格！',
+        images: ['https://images.unsplash.com/photo-1555126634-323283e090fa?w=400'],
+        author: {
+          nickname: '热闹王',
+          avatar: '🎉'
+        },
+        location: {
+          city: '成都',
+          district: '锦江区'
+        },
+        tags: ['串串', '聚餐', '热闹'],
+        likes: 145,
+        comments: [],
+        createTime: '2024-01-09 18:00',
+        isLiked: false
+      }
+    ];
+
+    // ==================== Tab Switch ====================
+    function switchTab(tab) {
+      state.currentTab = tab;
+      
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tab);
+      });
+
+      document.querySelectorAll('.tab-content').forEach(page => {
+        page.classList.toggle('active', page.id === tab + '-page');
+      });
+
+      if (tab === 'community') {
+        renderCommunityPage();
+      } else if (tab === 'profile') {
+        renderProfilePage();
+      }
+    }
+
+    // ==================== Random Pick ====================
+    const timePeriodNames = {
+      morning: '早餐',
+      lunch: '午餐',
+      dinner: '晚餐',
+      all: '全部'
+    };
+
+    function getTimePeriod() {
+      const hour = new Date().getHours();
+      if (hour >= 5 && hour < 10) return 'morning';
+      if (hour >= 10 && hour < 17) return 'lunch';
+      return 'dinner';
+    }
+
+    function selectTimePeriod(period) {
+      if (state.isRolling || state.isCoolingDown) return;
+      
+      state.selectedTimePeriod = period;
+      state.selectedTypes = [];
+      
+      document.querySelectorAll('.time-period-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.period === period);
+      });
+
+      updateTimePeriodName();
+      renderTypeTags();
+      updateFilterStatus();
+    }
+
+    function updateTimePeriodName() {
+      const name = state.selectedTimePeriod === 'all' 
+        ? '推荐' 
+        : timePeriodNames[state.selectedTimePeriod] + '推荐';
+      document.getElementById('time-period-name').textContent = name;
+    }
+
+    function renderTypeTags() {
+      const availableTypes = periodTypes[state.selectedTimePeriod];
+      const container = document.getElementById('type-scroll-inner');
+      container.innerHTML = '';
+
+      availableTypes.forEach(type => {
+        const tag = document.createElement('div');
+        tag.className = 'type-tag';
+        tag.dataset.type = type;
+        tag.innerHTML = `
+          <span class="type-emoji">${typeEmojis[type] || '🍽️'}</span>
+          <span class="type-name">${type}</span>
+        `;
+        tag.onclick = () => toggleType(tag, type);
+        container.appendChild(tag);
+      });
+
+      setTimeout(handleTypeScroll, 0);
+    }
+
+    function toggleType(tag, typeName) {
+      if (state.isRolling || state.isCoolingDown) return;
+      
+      tag.classList.toggle('selected');
+      
+      const index = state.selectedTypes.indexOf(typeName);
+      if (index > -1) {
+        state.selectedTypes.splice(index, 1);
+      } else {
+        state.selectedTypes.push(typeName);
+      }
+      
+      updateFilterStatus();
+    }
+
+    function updateFilterStatus() {
+      const content = document.getElementById('filter-status-content');
+      const periodText = state.selectedTimePeriod === 'all' 
+        ? '全部时段' 
+        : timePeriodNames[state.selectedTimePeriod];
+      
+      let typesHtml = state.selectedTypes.length > 0 
+        ? state.selectedTypes.map(t => `<span class="filter-tag">${t}</span>`).join('')
+        : `<span class="filter-tag all">全部类型</span>`;
+      
+      content.innerHTML = `
+        <span class="filter-tag ${state.selectedTimePeriod === 'all' ? 'all' : ''}">${periodText}</span>
+        ${typesHtml}
+      `;
+    }
+
+    function getFilteredFoods() {
+      return foods.filter(food => {
+        const periodMatch = state.selectedTimePeriod === 'all' || 
+                           food.periods.includes(state.selectedTimePeriod);
+        
+        const typeMatch = state.selectedTypes.length === 0 || 
+                         state.selectedTypes.includes(food.type);
+        
+        return periodMatch && typeMatch;
+      });
+    }
+
+    function scrollLeft() {
+      const scroll = document.getElementById('type-scroll');
+      scroll.scrollBy({ left: -120, behavior: 'smooth' });
+    }
+
+    function scrollRight() {
+      const scroll = document.getElementById('type-scroll');
+      scroll.scrollBy({ left: 120, behavior: 'smooth' });
+    }
+
+    function handleTypeScroll() {
+      const scroll = document.getElementById('type-scroll');
+      const leftBtn = document.getElementById('scroll-left-btn');
+      const rightBtn = document.getElementById('scroll-right-btn');
+
+      leftBtn.classList.toggle('disabled', scroll.scrollLeft <= 0);
+      rightBtn.classList.toggle('disabled', 
+        scroll.scrollLeft + scroll.clientWidth >= scroll.scrollWidth - 10
+      );
+    }
+
+    function startRoll() {
+      if (state.isCoolingDown) {
+        alert('请稍等一下，冷却时间还没结束~');
+        return;
+      }
+
+      const filteredFoods = getFilteredFoods();
+      
+      if (filteredFoods.length === 0) {
+        alert('没有找到合适的美食，调整一下筛选条件吧！');
+        return;
+      }
+
+      state.isRolling = true;
+      const startBtn = document.getElementById('start-btn');
+      const startBtnText = document.getElementById('start-btn-text');
+      
+      startBtnText.textContent = '暂停';
+      startBtn.className = 'start-btn pause-btn';
+      startBtn.onclick = pauseRoll;
+
+      document.getElementById('rolling-tip').style.display = 'block';
+      document.getElementById('retry-info').style.display = 
+        state.retryCount > 0 ? 'flex' : 'none';
+      if (state.retryCount > 0) {
+        document.getElementById('retry-count-text').textContent = 
+          `剩余 ${state.maxRetries - state.retryCount + 1} 次`;
+      }
+
+      // Initialize roller track
+      const rollerTrack = document.getElementById('roller-track');
+      rollerTrack.innerHTML = '';
+      for (let i = 0; i < 5; i++) {
+        const food = filteredFoods[Math.floor(Math.random() * filteredFoods.length)];
+        const item = document.createElement('div');
+        item.className = `roller-item ${i === 2 ? 'center' : ''}`;
+        item.innerHTML = `
+          <div class="roller-card">
+            <span class="roller-emoji">${food.emoji}</span>
+            <span class="roller-name">${food.name}</span>
+            <span class="roller-calories">${food.calories}</span>
+          </div>
+        `;
+        rollerTrack.appendChild(item);
+      }
+
+      // Start roll animation
+      state.rollInterval = setInterval(() => {
+        const newFood = filteredFoods[Math.floor(Math.random() * filteredFoods.length)];
+        const items = rollerTrack.children;
+        rollerTrack.removeChild(items[0]);
+        
+        const item = document.createElement('div');
+        item.className = 'roller-item';
+        item.innerHTML = `
+          <div class="roller-card">
+            <span class="roller-emoji">${newFood.emoji}</span>
+            <span class="roller-name">${newFood.name}</span>
+            <span class="roller-calories">${newFood.calories}</span>
+          </div>
+        `;
+        rollerTrack.appendChild(item);
+        
+        for (let i = 0; i < items.length; i++) {
+          items[i].classList.remove('center');
+          if (i === 1) {
+            items[i].classList.add('center');
+          }
+        }
+      }, 100);
+
+      // Auto pause after 3 seconds
+      setTimeout(() => {
+        if (state.isRolling) {
+          pauseRoll();
+        }
+      }, 3000);
+    }
+
+    function pauseRoll() {
+      state.isRolling = false;
+      clearInterval(state.rollInterval);
+
+      const filteredFoods = getFilteredFoods();
+      state.currentFood = filteredFoods[Math.floor(Math.random() * filteredFoods.length)];
+
+      showResult();
+    }
+
+    function showResult() {
+      const food = state.currentFood;
+
+      document.getElementById('result-emoji').textContent = food.emoji;
+      document.getElementById('result-name').textContent = food.name;
+      document.getElementById('result-type').textContent = food.type;
+      document.getElementById('result-desc').textContent = food.desc;
+      document.getElementById('result-calories').textContent = food.calories;
+      document.getElementById('result-comment').textContent = getRandomComment();
+
+      const tagsRow = document.getElementById('result-tags');
+      tagsRow.innerHTML = '';
+      food.tags.forEach(tag => {
+        const span = document.createElement('span');
+        span.className = 'tag-item';
+        span.textContent = tag;
+        tagsRow.appendChild(span);
+      });
+
+      document.getElementById('result-overlay').classList.add('active');
+
+      // Reset button
+      const startBtn = document.getElementById('start-btn');
+      const startBtnText = document.getElementById('start-btn-text');
+      startBtnText.textContent = '开始抽取';
+      startBtn.className = 'start-btn';
+      startBtn.onclick = startRoll;
+      document.getElementById('rolling-tip').style.display = 'none';
+
+      // Update retry button state
+      const retryBtn = document.getElementById('retry-btn');
+      if (state.retryCount >= state.maxRetries) {
+        retryBtn.classList.add('disabled');
+      } else {
+        retryBtn.classList.remove('disabled');
+      }
+    }
+
+    function getRandomComment() {
+      const comments = [
+        '今天的快乐已到账~',
+        '美味正在召唤你！',
+        '开吃开吃！🍽️',
+        '这就是命中注定！',
+        '好吃到起飞！',
+        '干饭人的快乐！',
+        '舌尖上的幸福~',
+        '美食治愈一切！',
+        '吃饱饱，没烦恼！',
+        '幸福就是这么简单~'
+      ];
+      return comments[Math.floor(Math.random() * comments.length)];
+    }
+
+    function confirmChoice() {
+      state.totalRolls++;
+      state.rollHistory.unshift({
+        name: state.currentFood.name,
+        emoji: state.currentFood.emoji,
+        type: state.currentFood.type,
+        time: new Date().toLocaleString('zh-CN')
+      });
+      if (state.rollHistory.length > 50) {
+        state.rollHistory.pop();
+      }
+      document.getElementById('result-overlay').classList.remove('active');
+      startCoolDown('confirm');
+    }
+
+    function retryChoice() {
+      if (state.retryCount >= state.maxRetries) {
+        return;
+      }
+
+      state.retryCount++;
+      
+      if (state.retryCount >= state.maxRetries) {
+        document.getElementById('result-overlay').classList.remove('active');
+        document.getElementById('final-modal').classList.add('active');
+        return;
+      }
+
+      document.getElementById('result-overlay').classList.remove('active');
+      startRoll();
+    }
+
+    function closeFinalModal() {
+      document.getElementById('final-modal').classList.remove('active');
+    }
+
+    function onFinalModalConfirm() {
+      document.getElementById('final-modal').classList.remove('active');
+      startCoolDown('retry');
+    }
+
+    function startCoolDown(type) {
+      state.isCoolingDown = true;
+      state.coolDownType = type;
+      state.coolDownSeconds = type === 'confirm' ? 3 * 60 : 8 * 60;
+
+      document.getElementById('cool-down-card').style.display = 'block';
+      document.querySelector('.header').style.display = 'none';
+      document.getElementById('time-period-section').style.display = 'none';
+      document.getElementById('type-section').style.display = 'none';
+      document.getElementById('roller-section').style.display = 'none';
+
+      updateCoolDownUI();
+
+      state.coolDownInterval = setInterval(() => {
+        state.coolDownSeconds--;
+        
+        if (state.coolDownSeconds <= 0) {
+          clearInterval(state.coolDownInterval);
+          endCoolDown();
+        } else {
+          updateCoolDownUI();
+        }
+      }, 1000);
+    }
+
+    function updateCoolDownUI() {
+      const minutes = Math.floor(state.coolDownSeconds / 60);
+      const seconds = state.coolDownSeconds % 60;
+      
+      document.getElementById('cool-down-time').innerHTML = 
+        `${minutes}<span>:${seconds.toString().padStart(2, '0')}</span>`;
+
+      if (state.coolDownType === 'confirm') {
+        document.getElementById('cool-down-icon').textContent = '😊';
+        document.getElementById('cool-down-title').textContent = '享受美食中';
+        document.getElementById('cool-down-hint').textContent = '3分钟后再来~';
+      } else {
+        document.getElementById('cool-down-icon').textContent = '😤';
+        document.getElementById('cool-down-title').textContent = '太挑剔啦';
+        document.getElementById('cool-down-hint').textContent = '8分钟后再试~';
+      }
+    }
+
+    function endCoolDown() {
+      state.isCoolingDown = false;
+      state.retryCount = 0;
+      state.coolDownSeconds = 0;
+
+      document.getElementById('cool-down-card').style.display = 'none';
+      document.querySelector('.header').style.display = 'block';
+      document.getElementById('time-period-section').style.display = 'block';
+      document.getElementById('type-section').style.display = 'block';
+      document.getElementById('roller-section').style.display = 'block';
+    }
+
+    // ==================== Community ====================
+    function renderCommunityPage() {
+      renderCityFilters();
+      renderTagFilters();
+      renderPosts();
+    }
+
+    function renderCityFilters() {
+      const cities = new Set();
+      state.posts.forEach(post => {
+        if (post.location && post.location.city) {
+          cities.add(post.location.city);
+        }
+      });
+
+      const container = document.getElementById('city-filter-list');
+      container.innerHTML = '';
+
+      const allItem = document.createElement('div');
+      allItem.className = 'filter-item' + (state.selectedCity === null ? ' active' : '');
+      allItem.textContent = '全部';
+      allItem.onclick = () => selectCity(null);
+      container.appendChild(allItem);
+
+      Array.from(cities).forEach(city => {
+        const item = document.createElement('div');
+        item.className = 'filter-item' + (state.selectedCity === city ? ' active' : '');
+        item.textContent = city;
+        item.onclick = () => selectCity(city);
+        container.appendChild(item);
+      });
+    }
+
+    function renderTagFilters() {
+      const tagCount = {};
+      state.posts.forEach(post => {
+        post.tags.forEach(tag => {
+          tagCount[tag] = (tagCount[tag] || 0) + 1;
+        });
+      });
+
+      const hotTags = Object.entries(tagCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 8)
+        .map(([tag]) => tag);
+
+      const container = document.getElementById('tag-filter-list');
+      container.innerHTML = '';
+
+      const allItem = document.createElement('div');
+      allItem.className = 'filter-item tag-item' + (state.selectedTag === null ? ' active' : '');
+      allItem.textContent = '全部';
+      allItem.onclick = () => selectTag(null);
+      container.appendChild(allItem);
+
+      hotTags.forEach(tag => {
+        const item = document.createElement('div');
+        item.className = 'filter-item tag-item' + (state.selectedTag === tag ? ' active' : '');
+        item.textContent = '#' + tag;
+        item.onclick = () => selectTag(tag);
+        container.appendChild(item);
+      });
+    }
+
+    function selectCity(city) {
+      state.selectedCity = city;
+      state.selectedTag = null;
+      state.postsDisplayed = 10;
+      renderCityFilters();
+      renderTagFilters();
+      renderPosts();
+    }
+
+    function selectTag(tag) {
+      state.selectedTag = tag;
+      state.selectedCity = null;
+      state.postsDisplayed = 10;
+      renderCityFilters();
+      renderTagFilters();
+      renderPosts();
+    }
+
+    function handleSearchInput(event) {
+      state.communitySearchKeyword = event.target.value;
+      state.postsDisplayed = 10;
+      document.getElementById('clear-search-btn').style.display = 
+        state.communitySearchKeyword ? 'flex' : 'none';
+      renderPosts();
+    }
+
+    function clearSearch() {
+      state.communitySearchKeyword = '';
+      document.getElementById('search-input').value = '';
+      document.getElementById('clear-search-btn').style.display = 'none';
+      renderPosts();
+    }
+
+    function getFilteredPosts() {
+      let filtered = state.posts;
+
+      if (state.selectedCity) {
+        filtered = filtered.filter(post => 
+          post.location && post.location.city === state.selectedCity
+        );
+      } else if (state.selectedTag) {
+        filtered = filtered.filter(post => 
+          post.tags.includes(state.selectedTag)
+        );
+      }
+
+      if (state.communitySearchKeyword) {
+        const keyword = state.communitySearchKeyword.toLowerCase();
+        filtered = filtered.filter(post => 
+          post.title.toLowerCase().includes(keyword) ||
+          post.content.toLowerCase().includes(keyword) ||
+          post.tags.some(tag => tag.toLowerCase().includes(keyword))
+        );
+      }
+
+      return filtered;
+    }
+
+    function renderPosts() {
+      const posts = getFilteredPosts();
+      const container = document.getElementById('posts-list');
+      const postCount = document.getElementById('post-count');
+      
+      postCount.textContent = `共 ${posts.length} 条`;
+
+      if (posts.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <span class="empty-icon">🍽️</span>
+            <span class="empty-text">还没有相关帖子</span>
+            <span class="empty-hint">快来分享你发现的美食吧！</span>
+          </div>
+        `;
+        document.getElementById('load-more').style.display = 'none';
+        return;
+      }
+
+      const postsToShow = posts.slice(0, state.postsDisplayed);
+      container.innerHTML = postsToShow.map(post => `
+        <div class="post-card" data-post-id="${post.id}">
+          <div class="post-header">
+            <div class="author-avatar">${post.author.avatar}</div>
+            <div class="author-info">
+              <span class="author-name">${post.author.nickname}</span>
+              <span class="post-time">${post.createTime}</span>
+            </div>
+            ${post.location ? `
+              <div class="location-tag">
+                <span class="location-icon">📍</span>
+                <span class="location-text">${post.location.city}${post.location.district ? ' · ' + post.location.district : ''}</span>
+              </div>
+            ` : ''}
+          </div>
+          <div class="post-content">
+            <span class="post-title">${post.title}</span>
+            <span class="post-desc">${post.content}</span>
+          </div>
+          ${post.images.length > 0 ? `
+            <div class="post-images">
+              ${post.images.slice(0, 3).map(img => `
+                <img class="post-image ${post.images.length === 1 ? 'single' : ''}" src="${img}" alt="food" />
+              `).join('')}
+            </div>
+          ` : ''}
+          <div class="post-tags">
+            ${post.tags.map(tag => `<span class="post-tag">#${tag}</span>`).join('')}
+          </div>
+          <div class="post-actions">
+            <div class="action-btn ${post.isLiked ? 'liked' : ''}" onclick="toggleLike(${post.id})">
+              <span class="action-icon">${post.isLiked ? '❤️' : '🤍'}</span>
+              <span class="action-count ${post.isLiked ? 'liked' : ''}">${post.likes}</span>
+            </div>
+            <div class="action-btn">
+              <span class="action-icon">💬</span>
+              <span class="action-count">${post.comments.length}</span>
+            </div>
+            <div class="action-btn">
+              <span class="action-icon">↗️</span>
+              <span class="action-text">分享</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('load-more').style.display = 
+        posts.length > state.postsDisplayed ? 'block' : 'none';
+    }
+
+    function toggleLike(postId) {
+      const post = state.posts.find(p => p.id === postId);
+      if (post) {
+        post.isLiked = !post.isLiked;
+        post.likes += post.isLiked ? 1 : -1;
+        renderPosts();
+      }
+    }
+
+    function loadMore() {
+      state.postsDisplayed += 10;
+      renderPosts();
+    }
+
+    function handleCreatePost() {
+      document.getElementById('create-post-overlay').classList.add('active');
+      initTagSelection();
+    }
+
+    function closeCreatePost() {
+      document.getElementById('create-post-overlay').classList.remove('active');
+      clearPostForm();
+    }
+
+    function initTagSelection() {
+      const tagOptions = document.querySelectorAll('.post-tag-option');
+      const customTagInput = document.getElementById('custom-tag-input');
+      
+      tagOptions.forEach(option => {
+        option.classList.remove('selected');
+        option.onclick = () => {
+          if (option.dataset.tag === 'other') {
+            const isSelected = option.classList.contains('selected');
+            option.classList.toggle('selected');
+            customTagInput.style.display = isSelected ? 'none' : 'block';
+            if (!isSelected) {
+              customTagInput.focus();
+            }
+          } else {
+            option.classList.toggle('selected');
+          }
+        };
+      });
+      
+      customTagInput.style.display = 'none';
+      customTagInput.value = '';
+    }
+
+    function getSelectedTags() {
+      const selected = [];
+      document.querySelectorAll('.post-tag-option.selected').forEach(option => {
+        if (option.dataset.tag !== 'other') {
+          selected.push(option.dataset.tag);
+        }
+      });
+      
+      const customTag = document.getElementById('custom-tag-input').value.trim();
+      if (customTag) {
+        selected.push(customTag);
+      }
+      
+      return selected;
+    }
+
+    function submitPost() {
+      const title = document.getElementById('post-title-input').value.trim();
+      const content = document.getElementById('post-content-input').value.trim();
+      const city = document.getElementById('post-city-input').value.trim();
+      const tags = getSelectedTags();
+
+      if (!title) {
+        alert('请输入标题~');
+        return;
+      }
+      if (!content) {
+        alert('请输入描述~');
+        return;
+      }
+      if (tags.length === 0) {
+        alert('请至少选择一个标签~');
+        return;
+      }
+
+      const newPost = {
+        id: Date.now(),
+        title: title,
+        content: content,
+        images: [],
+        author: {
+          nickname: '我',
+          avatar: '😊'
+        },
+        location: city ? { city: city, district: '' } : null,
+        tags: tags,
+        likes: 0,
+        comments: [],
+        createTime: new Date().toLocaleString('zh-CN', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        }).replace(/\//g, '-'),
+        isLiked: false
+      };
+
+      state.posts.unshift(newPost);
+      closeCreatePost();
+      state.communitySearchKeyword = '';
+      state.selectedCity = null;
+      state.selectedTag = null;
+      state.postsDisplayed = 10;
+      switchTab('community');
+      setTimeout(() => {
+        renderCityFilters();
+        renderTagFilters();
+        renderPosts();
+        document.getElementById('search-input').value = '';
+        document.getElementById('clear-search-btn').style.display = 'none';
+        alert('发布成功！');
+      }, 100);
+    }
+
+    function clearPostForm() {
+      document.getElementById('post-title-input').value = '';
+      document.getElementById('post-content-input').value = '';
+      document.getElementById('post-city-input').value = '';
+      document.getElementById('custom-tag-input').value = '';
+      document.querySelectorAll('.post-tag-option').forEach(option => {
+        option.classList.remove('selected');
+      });
+    }
+
+    // ==================== Profile ====================
+    function renderProfilePage() {
+      const myPosts = state.posts.filter(post => post.author.nickname === '我');
+      let totalLikes = 0;
+      myPosts.forEach(post => {
+        totalLikes += post.likes;
+      });
+
+      document.getElementById('stat-posts').textContent = myPosts.length;
+      document.getElementById('stat-likes').textContent = totalLikes;
+      document.getElementById('stat-rolls').textContent = state.totalRolls;
+    }
+
+    function showMyPosts() {
+      const myPosts = state.posts.filter(post => post.author.nickname === '我');
+      if (myPosts.length === 0) {
+        alert('你还没有发布过帖子，快去社区分享美食吧！');
+        return;
+      }
+      switchTab('community');
+    }
+
+    function showMyFavorites() {
+      const favorites = state.posts.filter(post => post.isLiked);
+      if (favorites.length === 0) {
+        alert('你还没有收藏过帖子~');
+        return;
+      }
+      state.selectedTag = null;
+      state.selectedCity = null;
+      renderCommunityPage();
+    }
+
+    function showHistory() {
+      if (state.rollHistory.length === 0) {
+        alert('你还没有抽取历史~');
+        return;
+      }
+      const historyList = state.rollHistory.slice(0, 10).map((item, i) => {
+        return `${i + 1}. ${item.emoji} ${item.name} (${item.time})`;
+      }).join('\n');
+      alert('抽取历史:\n' + historyList);
+    }
+
+    function showSettings() {
+      alert('消息通知功能开发中~');
+    }
+
+    function showPrivacy() {
+      alert('隐私设置功能开发中~\n\n我们将保护您的个人信息安全。');
+    }
+
+    function showEditProfile() {
+      const newName = prompt('请输入新的昵称:', '美食爱好者');
+      if (newName && newName.trim()) {
+        document.querySelector('.profile-name').textContent = newName.trim();
+      }
+    }
+
+    function showAbout() {
+      alert('今天吃什么 v1.0\n\n一个帮你解决"今天吃什么"难题的小程序~\n\n随机抽取美食，告别选择困难症！');
+    }
+
+    // ==================== Initialize ====================
+    function init() {
+      const currentPeriod = getTimePeriod();
+      state.selectedTimePeriod = currentPeriod;
+
+      document.querySelectorAll('.time-period-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.period === currentPeriod);
+      });
+
+      updateTimePeriodName();
+      renderTypeTags();
+      updateFilterStatus();
+      initRollerTrack();
+    }
+
+    function initRollerTrack() {
+      const rollerTrack = document.getElementById('roller-track');
+      const filteredFoods = getFilteredFoods();
+      
+      rollerTrack.innerHTML = '';
+      
+      for (let i = 0; i < 5; i++) {
+        const food = filteredFoods[Math.floor(Math.random() * filteredFoods.length)];
+        const item = document.createElement('div');
+        item.className = `roller-item ${i === 2 ? 'center' : ''}`;
+        item.innerHTML = `
+          <div class="roller-card">
+            <span class="roller-emoji">${food.emoji}</span>
+            <span class="roller-name">${food.name}</span>
+            <span class="roller-calories">${food.calories}</span>
+          </div>
+        `;
+        rollerTrack.appendChild(item);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

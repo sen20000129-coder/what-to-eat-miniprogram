@@ -1,0 +1,196 @@
+<view class="container">
+  <view class="header">
+    <view class="title-row">
+      <text class="title">今天吃什么</text>
+      <view class="time-badge">
+        <text class="time-text">{{timePeriodName}}推荐</text>
+      </view>
+    </view>
+    <view class="location-row" wx:if="{{false}}">
+      <text class="location-icon">📍</text>
+      <text class="location-text">获取定位中...</text>
+    </view>
+  </view>
+
+  <!-- 社区入口 -->
+  <view class="community-entry" bindtap="onGoToCommunity">
+    <view class="entry-content">
+      <text class="entry-icon">👥</text>
+      <view class="entry-text">
+        <text class="entry-title">美食社区</text>
+        <text class="entry-desc">发现附近美食，分享你的体验</text>
+      </view>
+    </view>
+    <text class="entry-arrow">›</text>
+  </view>
+
+  <!-- 时间段选择 -->
+  <view class="time-period-section">
+    <view class="section-header">
+      <text class="section-title">选择用餐时段</text>
+    </view>
+    <view class="time-period-tabs">
+      <view 
+        wx:for="{{timePeriods}}" 
+        wx:key="value"
+        class="time-period-tab {{timePeriod === item.value ? 'active' : ''}}"
+        bindtap="onTimePeriodTap"
+        data-period="{{item.value}}"
+      >
+        <text class="time-period-icon">{{item.icon}}</text>
+        <text class="time-period-name">{{item.name}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="type-section">
+    <view class="section-header">
+      <text class="section-title">选择你想要的美食类型</text>
+      <text class="hint-text">可多选</text>
+    </view>
+    <view class="type-scroll-wrapper">
+      <view class="scroll-btn scroll-btn-left {{scrollLeft <= 0 ? 'disabled' : ''}}" bindtap="onScrollLeft">
+        <text class="scroll-arrow">‹</text>
+      </view>
+      <scroll-view 
+        class="type-scroll" 
+        scroll-x="true" 
+        show-scrollbar="false"
+        enhanced="true"
+        bounces="true"
+        scroll-left="{{scrollLeft}}"
+        bindscroll="onTypeScroll"
+      >
+        <view class="type-scroll-inner">
+          <view 
+            wx:for="{{foodTypes}}" 
+            wx:key="name"
+            class="type-tag {{selectedTypes.indexOf(item.name) > -1 ? 'selected' : ''}}"
+            style="background-color: {{selectedTypes.indexOf(item.name) > -1 ? item.color : '#fff'}}; {{selectedTypes.indexOf(item.name) > -1 ? 'box-shadow: 0 6rpx 16rpx ' + item.color + '40;' : ''}}"
+            bindtap="onTypeTap"
+            data-type="{{item.name}}"
+          >
+            <text class="type-emoji">{{item.emoji}}</text>
+            <text class="type-name">{{item.name}}</text>
+          </view>
+        </view>
+      </scroll-view>
+      <view class="scroll-btn scroll-btn-right {{isScrollEnd ? 'disabled' : ''}}" bindtap="onScrollRight">
+        <text class="scroll-arrow">›</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="roller-section">
+    <view class="roller-wrapper">
+      <view class="roller-decoration top">
+        <view class="decoration-dots">
+          <text class="dot" wx:for="{{5}}" wx:key="index"></text>
+        </view>
+      </view>
+      
+      <view class="roller-container">
+        <view class="roller-frame"></view>
+        <view class="roller-mask top"></view>
+        <view class="roller-mask bottom"></view>
+        <view class="roller-track" animation="{{animationData}}">
+          <view 
+            wx:for="{{scrollFoods}}" 
+            wx:key="id"
+            class="roller-item {{index === 2 ? 'center' : ''}}"
+          >
+            <view class="roller-card">
+              <text class="roller-emoji">{{item.emoji}}</text>
+              <text class="roller-name">{{item.name}}</text>
+              <text class="roller-calories">{{item.calories}}</text>
+            </view>
+          </view>
+        </view>
+        <view class="roller-indicator">
+          <view class="indicator-left"></view>
+          <view class="indicator-line"></view>
+          <view class="indicator-right"></view>
+        </view>
+      </view>
+      
+      <view class="roller-decoration bottom">
+        <view class="decoration-dots">
+          <text class="dot" wx:for="{{5}}" wx:key="index"></text>
+        </view>
+      </view>
+    </view>
+
+    <view class="action-area">
+      <block wx:if="{{!isRolling && !showResult}}">
+        <button class="start-btn" bindtap="onStartRoll">
+          <text class="btn-emoji">🎯</text>
+          {{selectedTypes.length > 0 ? '开始抽取' : '随便看看'}}
+        </button>
+      </block>
+      
+      <block wx:if="{{isRolling}}">
+        <button class="pause-btn" bindtap="onPause">
+          <text class="btn-emoji">⏸</text>
+          暂停
+        </button>
+        <view class="rolling-tip">美食正在挑选中...</view>
+      </block>
+
+      <view class="retry-info" wx:if="{{isPaused && retryCount > 0}}">
+        <text class="retry-icon">🔄</text>
+        <text class="retry-count">剩余 {{maxRetries - retryCount + 1}} 次机会</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="result-section" wx:if="{{showResult && currentFood}}">
+    <view class="result-card">
+      <view class="result-header">
+        <text class="result-emoji">{{currentFood.emoji}}</text>
+        <view class="result-title-row">
+          <text class="result-name">{{currentFood.name}}</text>
+          <view class="result-type-tag">{{currentFood.type}}</view>
+        </view>
+      </view>
+      
+      <view class="result-body">
+        <text class="result-desc">{{currentFood.description}}</text>
+        <view class="calorie-row">
+          <text class="calorie-icon">🔥</text>
+          <text class="calorie-text">{{currentFood.calories}}</text>
+        </view>
+        <view class="tags-row">
+          <text 
+            wx:for="{{currentFood.tags}}" 
+            wx:key="index"
+            class="tag-item"
+          >{{item}}</text>
+        </view>
+        <text class="result-comment">{{currentFood.comment}}</text>
+      </view>
+
+      <view class="result-actions">
+        <button class="confirm-btn" bindtap="onConfirm">
+          ✓ 就这个了
+        </button>
+        <button 
+          class="retry-btn {{retryCount >= maxRetries ? 'disabled' : ''}}" 
+          bindtap="onRetry"
+        >
+          🔄 再来一次
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <view class="final-modal" wx:if="{{showFinalModal}}">
+    <view class="modal-mask" bindtap="onCloseFinalModal"></view>
+    <view class="modal-content">
+      <text class="modal-emoji">😤</text>
+      <text class="modal-text">这么作还是饿着吧</text>
+      <button class="modal-btn" bindtap="onCloseFinalModal">好吧好吧</button>
+    </view>
+  </view>
+
+  <canvas canvas-id="shareCanvas" class="share-canvas" style="width: 300px; height: 400px;"></canvas>
+</view>

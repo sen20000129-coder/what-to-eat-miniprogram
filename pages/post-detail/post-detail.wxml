@@ -1,0 +1,139 @@
+<view class="container">
+  <!-- 加载中 -->
+  <view class="loading-state" wx:if="{{isLoading}}">
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 帖子内容 -->
+  <block wx:if="{{!isLoading && post}}">
+    <scroll-view class="content-scroll" scroll-y>
+      <!-- 头部 -->
+      <view class="header">
+        <view class="back-btn" bindtap="onBack">
+          <text class="back-icon">‹</text>
+        </view>
+        <text class="header-title">帖子详情</text>
+        <view class="placeholder"></view>
+      </view>
+
+      <!-- 作者信息 -->
+      <view class="author-section">
+        <image class="author-avatar" src="{{post.author.avatar}}" mode="aspectFill"/>
+        <view class="author-info">
+          <text class="author-name">{{post.author.nickname}}</text>
+          <text class="post-time">{{post.createTime}}</text>
+        </view>
+      </view>
+
+      <!-- 帖子内容 -->
+      <view class="post-content">
+        <text class="post-title">{{post.title}}</text>
+        <text class="post-text">{{post.content}}</text>
+      </view>
+
+      <!-- 图片 -->
+      <view class="post-images" wx:if="{{post.images.length > 0}}">
+        <image 
+          wx:for="{{post.images}}" 
+          wx:for-item="img"
+          wx:key="*this"
+          class="post-image {{post.images.length === 1 ? 'single' : ''}}"
+          src="{{img}}" 
+          mode="aspectFill"
+          bindtap="onPreviewImage"
+          data-url="{{img}}"
+          data-urls="{{post.images}}"
+        />
+      </view>
+
+      <!-- 位置信息 -->
+      <view class="location-section" wx:if="{{post.location}}" bindtap="onCopyLocation">
+        <view class="location-icon">📍</view>
+        <view class="location-info">
+          <text class="location-main">{{post.location.city}}{{post.location.district ? ' · ' + post.location.district : ''}}</text>
+          <text class="location-address" wx:if="{{post.location.address}}">{{post.location.address}}</text>
+        </view>
+        <text class="copy-hint">点击复制</text>
+      </view>
+
+      <!-- 标签 -->
+      <view class="tags-section" wx:if="{{post.tags.length > 0}}">
+        <text 
+          wx:for="{{post.tags}}" 
+          wx:for-item="tag"
+          wx:key="*this"
+          class="tag"
+        >#{{tag}}</text>
+      </view>
+
+      <!-- 互动区域 -->
+      <view class="actions-section">
+        <view class="action-item {{post.isLiked ? 'liked' : ''}}" bindtap="onLike">
+          <text class="action-icon">{{post.isLiked ? '❤️' : '🤍'}}</text>
+          <text class="action-count">{{post.likes}}</text>
+          <text class="action-label">点赞</text>
+        </view>
+        <view class="action-item">
+          <text class="action-icon">💬</text>
+          <text class="action-count">{{post.comments.length}}</text>
+          <text class="action-label">评论</text>
+        </view>
+        <view class="action-item">
+          <text class="action-icon">↗️</text>
+          <text class="action-label">分享</text>
+          <button class="share-btn" open-type="share"></button>
+        </view>
+      </view>
+
+      <!-- 评论区域 -->
+      <view class="comments-section">
+        <view class="comments-header">
+          <text class="comments-title">评论 ({{post.comments.length}})</text>
+        </view>
+
+        <!-- 评论列表 -->
+        <view class="comments-list" wx:if="{{post.comments.length > 0}}">
+          <view 
+            wx:for="{{post.comments}}" 
+            wx:key="id"
+            class="comment-item"
+          >
+            <view class="comment-avatar">
+              <text class="avatar-text">{{item.author[0]}}</text>
+            </view>
+            <view class="comment-content">
+              <view class="comment-header">
+                <text class="comment-author">{{item.author}}</text>
+                <text class="comment-time">{{item.createTime}}</text>
+              </view>
+              <text class="comment-text">{{item.content}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 空评论 -->
+        <view class="empty-comments" wx:if="{{post.comments.length === 0}}">
+          <text class="empty-icon">💬</text>
+          <text class="empty-text">还没有评论</text>
+          <text class="empty-hint">快来发表第一条评论吧~</text>
+        </view>
+      </view>
+
+      <!-- 底部占位 -->
+      <view class="bottom-placeholder"></view>
+    </scroll-view>
+
+    <!-- 评论输入框 -->
+    <view class="comment-input-section">
+      <input 
+        class="comment-input" 
+        placeholder="写下你的评论..."
+        value="{{commentContent}}"
+        bindinput="onCommentInput"
+        confirm-type="send"
+        bindconfirm="onSubmitComment"
+      />
+      <button class="submit-btn" bindtap="onSubmitComment">发送</button>
+    </view>
+  </block>
+</view>
