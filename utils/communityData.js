@@ -160,6 +160,20 @@ const toggleFavorite = (postId) => {
   return null;
 };
 
+// 删除评论
+const deleteComment = (postId, commentId) => {
+  const post = communityPosts.find(p => p.id === postId);
+  if (post) {
+    const index = post.comments.findIndex(c => c.id === commentId);
+    if (index > -1) {
+      post.comments.splice(index, 1);
+      savePosts();
+      return true;
+    }
+  }
+  return false;
+};
+
 // 获取热门标签
 const getHotTags = () => {
   const tagCount = {};
@@ -211,6 +225,7 @@ module.exports = {
   createPost,
   toggleLike,
   toggleFavorite,
+  deleteComment,
   addComment,
   getHotTags,
   getAllCities,

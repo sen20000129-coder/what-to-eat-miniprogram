@@ -13,7 +13,10 @@ Page({
     isLoading: false,
     hasMore: true,
     pageSize: 10,
-    currentPage: 1
+    currentPage: 1,
+    showCommentModal: false,
+    commentText: '',
+    currentCommentPostId: null
   },
 
   onLoad() {
@@ -35,6 +38,8 @@ Page({
     
     const myPosts = app.globalData.myPosts || [];
     if (myPosts.length > 0) {
+      const myPostIds = new Set(myPosts.map(p => p.id));
+      posts = posts.filter(p => !myPostIds.has(p.id));
       posts = [...myPosts, ...posts];
     }
 
@@ -220,9 +225,95 @@ Page({
   // 评论
   onComment(e) {
     const postId = e.currentTarget.dataset.id;
-    wx.navigateTo({
-      url: `/pages/post-detail/post-detail?id=${postId}`
+    this.setData({
+      showCommentModal: true,
+      currentCommentPostId: postId,
+      commentText: ''
     });
+  },
+
+  // 关闭评论弹窗
+  onCloseCommentModal() {
+    this.setData({
+      showCommentModal: false,
+      commentText: '',
+      currentCommentPostId: null
+    });
+  },
+
+  // 阻止事件冒泡
+  stopPropagation() {
+    return;
+  },
+
+  // 评论输入
+  onCommentInput(e) {
+    this.setData({
+      commentText: e.detail.value
+    });
+  },
+
+  // 提交评论
+  onSubmitComment() {
+    const { commentText, currentCommentPostId } = this.data;
+    
+    if (!commentText || !commentText.trim()) {
+      wx.showToast({
+        title: '请输入评论内容',
+        icon: 'none'
+      });
+      return;
+    }
+
+    const currentUser = communityData.getCurrentUser();
+    const commentData = {
+      author: currentUser.nickname,
+      content: commentText.trim()
+    };
+
+    const newComment = communityData.addComment(currentCommentPostId, commentData);
+    
+    if (newComment) {
+      const posts = this.data.posts.map(post => {
+        if (post.id === currentCommentPostId) {
+          const updatedPost = communityData.getPostById(currentCommentPostId);
+          return {
+            ...post,
+            comments: updatedPost.comments
+          };
+        }
+        return post;
+      });
+
+      const filteredPosts = this.data.filteredPosts.map(post => {
+        if (post.id === currentCommentPostId) {
+          const updatedPost = communityData.getPostById(currentCommentPostId);
+          return {
+            ...post,
+            comments: updatedPost.comments
+          };
+        }
+        return post;
+      });
+
+      this.setData({
+        posts,
+        filteredPosts,
+        showCommentModal: false,
+        commentText: '',
+        currentCommentPostId: null
+      });
+
+      wx.showToast({
+        title: '评论成功',
+        icon: 'success'
+      });
+    } else {
+      wx.showToast({
+        title: '评论失败',
+        icon: 'none'
+      });
+    }
   },
 
   // 分享

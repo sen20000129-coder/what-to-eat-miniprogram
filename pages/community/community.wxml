@@ -181,4 +181,30 @@
     <text class="fab-icon">+</text>
     <text class="fab-text">分享</text>
   </view>
+
+  <!-- 评论输入弹窗 -->
+  <view class="comment-modal" wx:if="{{showCommentModal}}" catchtap="onCloseCommentModal">
+    <view class="comment-dialog" catchtap="stopPropagation">
+      <view class="comment-dialog-header">
+        <text class="comment-dialog-title">评论</text>
+        <view class="comment-dialog-close" bindtap="onCloseCommentModal">
+          <text>✕</text>
+        </view>
+      </view>
+      <view class="comment-dialog-content">
+        <textarea 
+          class="comment-input" 
+          placeholder="说点什么吧..." 
+          maxlength="200"
+          auto-focus
+          bindinput="onCommentInput"
+          value="{{commentText}}"
+        ></textarea>
+        <view class="comment-hint">{{commentText.length || 0}}/200</view>
+      </view>
+      <view class="comment-dialog-footer">
+        <button class="comment-submit-btn" bindtap="onSubmitComment">发布</button>
+      </view>
+    </view>
+  </view>
 </view>

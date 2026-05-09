@@ -230,6 +230,28 @@
   color: #FF6B6B;
 }
 
+.action-item.favorited .action-icon {
+  transform: scale(1.1);
+}
+
+.action-item.favorited .action-count {
+  color: #FFA500;
+}
+
+.comment-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12rpx;
+}
+
+.delete-btn {
+  font-size: 24rpx;
+  color: #FF6B6B;
+  padding: 8rpx 16rpx;
+  background: rgba(255, 107, 107, 0.1);
+  border-radius: 8rpx;
+}
+
 .share-btn {
   position: absolute;
   left: 0;

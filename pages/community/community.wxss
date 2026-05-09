@@ -183,7 +183,7 @@
   left: 0;
   right: 0;
   top: 0;
-  bottom: 0;
+  height: 180rpx;
   z-index: 10;
 }
 
@@ -303,12 +303,16 @@
   align-items: center;
   padding-top: 20rpx;
   border-top: 2rpx solid #F5F5F5;
+  position: relative;
+  z-index: 20;
 }
 
 .action-btn {
   display: flex;
   align-items: center;
   margin-right: 40rpx;
+  position: relative;
+  z-index: 20;
 }
 
 .action-icon {
@@ -397,4 +401,94 @@
   font-size: 22rpx;
   color: #fff;
   margin-top: 4rpx;
+}
+
+/* 评论弹窗 */
+.comment-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+}
+
+.comment-dialog {
+  width: 100%;
+  background: #fff;
+  border-radius: 24rpx 24rpx 0 0;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.comment-dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 32rpx;
+  border-bottom: 2rpx solid #F5F5F5;
+}
+
+.comment-dialog-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.comment-dialog-close {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F5F5F5;
+  border-radius: 50%;
+}
+
+.comment-dialog-close text {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.comment-dialog-content {
+  padding: 24rpx 32rpx;
+}
+
+.comment-input {
+  width: 100%;
+  min-height: 200rpx;
+  padding: 24rpx;
+  background: #F9F9F9;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.6;
+  box-sizing: border-box;
+}
+
+.comment-hint {
+  text-align: right;
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 12rpx;
+}
+
+.comment-dialog-footer {
+  padding: 24rpx 32rpx;
+}
+
+.comment-submit-btn {
+  width: 100%;
+  height: 88rpx;
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+  border-radius: 44rpx;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

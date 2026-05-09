@@ -52,6 +52,23 @@ Page({
     });
   },
 
+  onMyComments() {
+    const myComments = app.globalData.myComments || [];
+    if (myComments.length === 0) {
+      wx.showToast({
+        title: '您还没有评论过内容',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    this.setData({
+      activeTab: 'comments',
+      showContentList: true,
+      contentList: myComments
+    });
+  },
+
   onMyFavorites() {
     const myFavorites = app.globalData.myFavorites;
     if (myFavorites.length === 0) {

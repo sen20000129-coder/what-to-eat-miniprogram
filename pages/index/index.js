@@ -25,7 +25,12 @@ Page({
     scrollLeft: 0,
     isScrollEnd: false,
     scrollStep: 200,
-    availableFoods: []
+    availableFoods: [],
+    cooldownRemaining: 0,
+    cooldownMinutes: 0,
+    cooldownSeconds: 0,
+    isInCooldown: false,
+    confirmCount: 0
   },
 
   onLoad() {
@@ -143,6 +148,18 @@ Page({
 
   onStartRoll() {
     if (this.data.isRolling) return;
+    
+    if (this.data.isInCooldown && this.data.cooldownRemaining > 0) {
+      const minutes = Math.floor(this.data.cooldownRemaining / 60);
+      const seconds = this.data.cooldownRemaining % 60;
+      const timeText = minutes > 0 ? `${minutes}分${seconds}秒` : `${seconds}秒`;
+      wx.showToast({
+        title: `冷却中，请${timeText}后再试`,
+        icon: 'none',
+        duration: 2000
+      });
+      return;
+    }
 
     const availableFoods = foodData.filterFoodsByTypesAndTime(
       this.data.selectedTypes,
@@ -174,6 +191,44 @@ Page({
     this.startRollAnimation();
   },
 
+  startCooldownTimer(seconds) {
+    if (this.confoldownInterval) {
+      clearInterval(this.confoldownInterval);
+    }
+    
+    let remaining = seconds;
+    const minutes = Math.floor(remaining / 60);
+    const secs = remaining % 60;
+    this.setData({ 
+      cooldownRemaining: remaining, 
+      cooldownMinutes: minutes,
+      cooldownSeconds: secs,
+      isInCooldown: true 
+    });
+    
+    this.confoldownInterval = setInterval(() => {
+      remaining--;
+      const mins = Math.floor(remaining / 60);
+      const secs = remaining % 60;
+      if (remaining <= 0) {
+        clearInterval(this.confoldownInterval);
+        this.setData({ 
+          cooldownRemaining: 0, 
+          cooldownMinutes: 0,
+          cooldownSeconds: 0,
+          isInCooldown: false,
+          confirmCount: 0
+        });
+      } else {
+        this.setData({ 
+          cooldownRemaining: remaining,
+          cooldownMinutes: mins,
+          cooldownSeconds: secs
+        });
+      }
+    }, 1000);
+  },
+  
   startRollAnimation() {
     const availableFoods = foodData.filterFoodsByTypesAndTime(
       this.data.selectedTypes,
@@ -186,6 +241,13 @@ Page({
     
     const maxDuration = 3 * 60 * 1000;
     const startTime = Date.now();
+    const cooldownSeconds = 180;
+    this.setData({ cooldownRemaining: cooldownSeconds });
+
+    this.cooldownTimer = setInterval(() => {
+      const remaining = Math.max(0, cooldownSeconds - Math.floor((Date.now() - startTime) / 1000));
+      this.setData({ cooldownRemaining: remaining });
+    }, 1000);
 
     this.rollTimer = setInterval(() => {
       const elapsed = Date.now() - startTime;
@@ -193,6 +255,7 @@ Page({
       if (currentIndex >= 15 && currentIndex % 3 === 0) {
         const slowDown = Math.floor((currentIndex - 15) / 5) * 50;
         clearInterval(this.rollTimer);
+        clearInterval(this.cooldownTimer);
         setTimeout(() => {
           this.showFinalResult(availableFoods);
         }, slowDown);
@@ -201,6 +264,7 @@ Page({
       
       if (elapsed >= maxDuration) {
         clearInterval(this.rollTimer);
+        clearInterval(this.cooldownTimer);
         this.showFinalResult(availableFoods);
         return;
       }
@@ -216,18 +280,23 @@ Page({
   },
   
   showFinalResult(availableFoods) {
+    clearInterval(this.rollTimer);
+    clearInterval(this.cooldownTimer);
+    
     const finalFood = availableFoods[Math.floor(Math.random() * availableFoods.length)];
     this.setData({
       currentFood: finalFood,
       isRolling: false,
       isPaused: true,
-      showResult: true
+      showResult: true,
+      cooldownRemaining: 0
     });
   },
 
   onPause() {
     if (!this.data.isRolling) return;
     clearInterval(this.rollTimer);
+    clearInterval(this.cooldownTimer);
     
     const availableFoods = foodData.filterFoodsByTypesAndTime(
       this.data.selectedTypes,
@@ -239,12 +308,28 @@ Page({
       currentFood: finalFood,
       isRolling: false,
       isPaused: true,
-      showResult: true
+      showResult: true,
+      cooldownRemaining: 0
     });
   },
 
   onConfirm() {
-    this.setData({ showResult: false, isPaused: false });
+    const newConfirmCount = (this.data.confirmCount || 0) + 1;
+    let cooldownSeconds = 60;
+    
+    if (newConfirmCount >= 3) {
+      cooldownSeconds = 300;
+    }
+    
+    this.setData({ 
+      showResult: false, 
+      isPaused: false,
+      confirmCount: newConfirmCount,
+      cooldownRemaining: cooldownSeconds
+    });
+    
+    this.startCooldownTimer(cooldownSeconds);
+    
     wx.showToast({
       title: '恭喜获得美食！',
       icon: 'success',

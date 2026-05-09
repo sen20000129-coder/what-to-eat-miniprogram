@@ -240,11 +240,23 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: 140rpx;
   flex-shrink: 0;
+  position: relative;
 }
 
 .type-tag.selected {
-  transform: translateY(-4rpx) scale(1.02);
-  border-color: #FF6B6B;
+  transform: translateY(-4rpx) scale(1.08) !important;
+  border: 4rpx solid #FF6B6B !important;
+  background-color: #FF6B6B !important;
+  box-shadow: 0 8rpx 20rpx rgba(255, 107, 107, 0.5) !important;
+}
+
+.type-tag.selected .type-emoji {
+  transform: scale(1.1);
+}
+
+.type-tag.selected .type-name {
+  color: #fff !important;
+  font-weight: bold !important;
 }
 
 .type-emoji {
@@ -531,6 +543,40 @@
   color: #999;
   font-style: italic;
   animation: fadeInOut 1.5s ease infinite;
+}
+
+.cooldown-tip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  margin-top: 16rpx;
+  padding: 12rpx 24rpx;
+  background: linear-gradient(135deg, #FFE4E4 0%, #FFD4D4 100%);
+  border-radius: 24rpx;
+  animation: countdownPulse 1s ease infinite;
+}
+
+.cooldown-icon {
+  font-size: 28rpx;
+  animation: rotate 2s linear infinite;
+}
+
+.cooldown-text {
+  font-size: 26rpx;
+  color: #FF6B6B;
+  font-weight: 600;
+}
+
+@keyframes countdownPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4rpx 12rpx rgba(255, 107, 107, 0.2);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 6rpx 16rpx rgba(255, 107, 107, 0.3);
+  }
 }
 
 @keyframes fadeInOut {

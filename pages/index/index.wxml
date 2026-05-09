@@ -66,7 +66,6 @@
             wx:for="{{foodTypes}}" 
             wx:key="name"
             class="type-tag {{selectedTypes.indexOf(item.name) > -1 ? 'selected' : ''}}"
-            style="background-color: {{selectedTypes.indexOf(item.name) > -1 ? item.color : '#fff'}}; {{selectedTypes.indexOf(item.name) > -1 ? 'box-shadow: 0 6rpx 16rpx ' + item.color + '40;' : ''}}"
             bindtap="onTypeTap"
             data-type="{{item.name}}"
           >
@@ -122,9 +121,17 @@
 
     <view class="action-area">
       <block wx:if="{{!isRolling && !showResult}}">
-        <button class="start-btn" bindtap="onStartRoll">
-          <text class="btn-emoji">🎯</text>
-          {{selectedTypes.length > 0 ? '开始抽取' : '随便看看'}}
+        <view class="cooldown-display" wx:if="{{isInCooldown && cooldownRemaining > 0}}">
+          <text class="cooldown-icon">⏰</text>
+          <text class="cooldown-text">冷却中 {{cooldownMinutes}}:{{cooldownSeconds}}</text>
+        </view>
+        <button 
+          class="start-btn {{isInCooldown ? 'cooldown' : ''}}" 
+          bindtap="onStartRoll"
+          disabled="{{isInCooldown}}"
+        >
+          <text class="btn-emoji">{{isInCooldown ? '⏸' : '🎯'}}</text>
+          {{isInCooldown ? '冷却中...' : (selectedTypes.length > 0 ? '开始抽取' : '随便看看')}}
         </button>
       </block>
       

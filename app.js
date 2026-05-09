@@ -10,7 +10,8 @@ App({
     },
     myPosts: [],
     myFavorites: [],
-    myLikes: []
+    myLikes: [],
+    myComments: []
   },
 
   onLaunch() {
@@ -40,6 +41,7 @@ App({
       this.globalData.myPosts = storedData.myPosts || [];
       this.globalData.myFavorites = storedData.myFavorites || [];
       this.globalData.myLikes = storedData.myLikes || [];
+      this.globalData.myComments = storedData.myComments || [];
     }
   },
 
@@ -48,7 +50,8 @@ App({
       userInfo: this.globalData.userInfo,
       myPosts: this.globalData.myPosts,
       myFavorites: this.globalData.myFavorites,
-      myLikes: this.globalData.myLikes
+      myLikes: this.globalData.myLikes,
+      myComments: this.globalData.myComments
     });
   }
 });
